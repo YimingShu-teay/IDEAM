@@ -536,7 +536,7 @@ class LMPC:
                 constraints += [u[0, t + 1] - u[0, t] >= self.MIN_DACCEL * self.DU_TH]
         
         cost += cvxpy.quad_form(d[:,self.T-1], self.P)
-        cost += cvxpy.quad_form(reference[:, self.T-1] - x[:, self.T], self.Q[self.T])
+        cost += cvxpy.quad_form(reference[:, self.T-1] - x[:, self.T], self.Q[self.T-1])
         cost += cvxpy.quad_form(x[4:, self.T], self.Qt)
         
         # surround constraints in other lanes
@@ -562,7 +562,7 @@ class LMPC:
             if dL_min_surround is not None:
                 cost += cvxpy.quad_form(slack_surroundl[:,self.T-1], self.Rssl)
                 constraints += [x[4,self.T] + slack_surroundl[0,self.T-1]<= dL_min_surround[self.T]]
-                # constraints += [slack_surroundl[0,self.T-1] >=0]
+                constraints += [slack_surroundl[0,self.T-1] >=0]
         
         # constraints for lane restriction
         if  C_label_virtual == "K":
@@ -1022,7 +1022,7 @@ class LMPC:
                 constraints += [u[0, t + 1] - u[0, t] >= self.MIN_DACCEL * self.DU_TH]
         
         cost += cvxpy.quad_form(d[:,self.T-1], self.P)
-        cost += cvxpy.quad_form(reference[:, self.T-1] - x[:, self.T], self.Q[self.T])
+        cost += cvxpy.quad_form(reference[:, self.T-1] - x[:, self.T], self.Q[self.T-1])
         cost += cvxpy.quad_form(x[4:, self.T], self.Qt)
         
         # surround constraints in other lanes
