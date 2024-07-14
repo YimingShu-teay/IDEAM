@@ -413,9 +413,9 @@ class LMPC:
                 # constraints for lane restriction
                 if C_label_virtual == "K":
                     if path_now == 0:
-                        constraints += [x[4,t] <= 4.2]
+                        constraints += [x[4,t] <= 4.5]
                     elif path_now == 2:
-                        constraints += [x[4,t] >= -4.2]
+                        constraints += [x[4,t] >= -4.5]
                     elif path_now == 1:
                         cost += cvxpy.quad_form(d[:, t], self.P)
                         constraints += [x[4,t] <= 0.01 + d[0,t]]
@@ -424,12 +424,12 @@ class LMPC:
                     
                 elif C_label_virtual == "L":
                     if path_now == 2:
-                        constraints += [x[4,t] >= -4.2]
+                        constraints += [x[4,t] >= -4.5]
 
                     
                 elif  C_label_virtual == "R":
                     if path_now == 0:
-                        constraints += [x[4,t] <= 4.2]
+                        constraints += [x[4,t] <= 4.5]
                 
                 if C_label_additive == "constraint":
                     if prediction_ahead is not None and t <=20:
@@ -446,7 +446,7 @@ class LMPC:
                             at_l_1,bt_l_1,ct_l_1 = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                             psi_0_tplus1_l = at_l_1 * x[3,t+1] + bt_l_1 * x[4,t+1] + ct_l_1
                             constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l + slack_hocbf2[0,t]>= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
-                            # constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
+                            constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
 
                     if prediction_rear is not None and t <= 20:
                         cost += cvxpy.quad_form(([1,0]-w1[:,t]), self.Pw1)
@@ -462,7 +462,7 @@ class LMPC:
                             at_f_1,bt_f_1,ct_f_1 = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                             psi_0_tplus1_f = at_f_1 * x[3,t+1] + bt_f_1 * x[4,t+1] + ct_f_1
                             constraints += [psi_0_tplus1_f + (self.gamma1-1)*psi_t_f - (1-self.gamma2)**t * psi_0_1_f + slackf_hocbf2[0,t]>= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_f]
-                            # constraints += [psi_0_tplus1_f + (self.gamma1-1)*psi_t_f - (1-self.gamma2)**t * psi_0_1_f >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_f]
+                            constraints += [psi_0_tplus1_f + (self.gamma1-1)*psi_t_f - (1-self.gamma2)**t * psi_0_1_f >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_f]
                     
                     if prediction_sl_target is not None:
                         cost += cvxpy.quad_form(slack_cbf_tl[:, t], self.Rs)
@@ -567,9 +567,9 @@ class LMPC:
         # constraints for lane restriction
         if  C_label_virtual == "K":
             if path_now == 0:
-                constraints += [x[4,self.T] <= 4.2]
+                constraints += [x[4,self.T] <= 4.5]
             elif path_now == 2:
-                constraints += [x[4,self.T] >= -4.2]
+                constraints += [x[4,self.T] >= -4.5]
             elif path_now == 1:
                 cost += cvxpy.quad_form(d[:, self.T-1], self.P)
                 constraints += [x[4,self.T] <= 0.01 + d[0,self.T-1]]
@@ -578,12 +578,12 @@ class LMPC:
             
         elif C_label_virtual == "L":
                 if path_now == 2:
-                    constraints += [x[4,self.T] >= -4.2]
+                    constraints += [x[4,self.T] >= -4.5]
 
             
         elif C_label_virtual == "R":
                 if path_now == 0:
-                    constraints += [x[4,self.T] <= 4.2]
+                    constraints += [x[4,self.T] <= 4.5]
 
         
         constraints += [x[:, 0] == x0[:]]
