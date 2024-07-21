@@ -309,8 +309,8 @@ class LMPC:
         """
         MPC control with updating operational point iteratively
         """
-        ovx, ovy, ow, os, oey, oepsi, oa, od = None, None, None, None, None, None, None, None
-
+        # ovx, ovy, ow, os, oey, oepsi, oa, od = None, None, None, None, None, None, None, None
+        print("oa",oa is None)
         if oa is None or od is None:
             oa = [0.0] * (self.T)
             od = [0.0] * (self.T)
@@ -319,16 +319,15 @@ class LMPC:
             oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label, C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
             if oa is None:
                 print("Solve again!!!!")
+                self.Pw1 = np.diag([0.0,0.0])*0.1
+                self.Pw2 = np.diag([0.0,0.0])*0.1
                 oa = [0.0] * (self.T)
                 od = [0.0] * (self.T)               
                 ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
                 last_X = [ovx, ovy, owz, oS, oey, oepsi]
-                oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
-            # du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
-            # if du <= self.DU_TH:
-            #     break
-        else:
-            print("Iterative is max iter")
+                oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od, GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
+                self.Pw1 = np.diag([5.0,0.0])*0.1
+                self.Pw2 = np.diag([5.0,0.0])*0.1
 
         return oa, od, ovx, ovy, owz, oS, oey, oepsi
 
