@@ -28,6 +28,7 @@ def find_nearest_intersection(a, b, center, external_point):
 
     # 解二次方程
     delta = coeff_x**2 - 4*coeff_x2*coeff_const
+    # print("delta=",delta)
     if delta < 0:  # No intersection
         return None
 

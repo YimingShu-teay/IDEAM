@@ -13,7 +13,7 @@ def constraint_params():
     MAX_STEER = math.radians(25.0)
     MIN_STEER = math.radians(-25.0)
     MAX_DACCEL = 3.0
-    MIN_DACCEL = -6.0
+    MIN_DACCEL = -10.0
     MAX_DSTEER = math.radians(15.0)
     MIN_DSTEER = math.radians(-15.0)
     R = np.diag([1.0,80.0])*0.1
@@ -77,8 +77,8 @@ def constraint_params():
     gamma_r = 0.9
     a_l = 1.5
     b_l = 2.2
-    a_f = 2.0
-    b_f = 2.5
+    a_f = 1.8
+    b_f = 2.3 #这里的参数需要改可变，还要de一下hocbf里的delta的bug
     dt = 0.1
     
     params = {

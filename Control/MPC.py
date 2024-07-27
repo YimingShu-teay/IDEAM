@@ -317,10 +317,13 @@ class LMPC:
 
         for i in range(self.MAX_ITER):   
             oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label, C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
+            print("oa=",oa)
+            print("ob=",od)
             if oa is None:
                 print("Solve again!!!!")
                 self.Pw1 = np.diag([0.0,0.0])*0.1
                 self.Pw2 = np.diag([0.0,0.0])*0.1
+                self.b_f = 2.2
                 oa = [0.0] * (self.T)
                 od = [0.0] * (self.T)               
                 ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
@@ -328,6 +331,7 @@ class LMPC:
                 oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od, GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
                 self.Pw1 = np.diag([5.0,0.0])*0.1
                 self.Pw2 = np.diag([5.0,0.0])*0.1
+                self.b_f = 2.3
 
         return oa, od, ovx, ovy, owz, oS, oey, oepsi
 
@@ -366,6 +370,8 @@ class LMPC:
                 psi_0_1_l = a1_l * x[3,1] + b1_l * x[4,1] + c1_l        
             
             if prediction_rear is not None:
+                print("prediction_rear[:,0]=",prediction_rear[:,0])
+                print("(x0[3],x0[4])=",(x0[3],x0[4]))
                 a0_f,b0_f,c0_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[:,0], (x0[3],x0[4]))
                 psi_0_0_f = a0_f * x0[3] + b0_f * x0[4] + c0_f # 0's time DHOCBF in this iteration
                 
@@ -595,7 +601,11 @@ class LMPC:
         # constraints += [x[5,:] <= np.pi]
         
         prob = cvxpy.Problem(cvxpy.Minimize(cost), constraints)
-        prob.solve(solver=cvxpy.ECOS, verbose=False)
+        try:            
+            prob.solve(solver=cvxpy.ECOS, verbose=False)
+        except:
+            print("Error: Cannot solve mpc..")
+            ovx, ovy, owz, os, oey, oepsi, oa, odelta   = None, None, None, None, None, None, None, None            
         if prob.status == cvxpy.OPTIMAL or prob.status == cvxpy.OPTIMAL_INACCURATE:
             ovx = get_nparray_from_matrix(x.value[0, :])
             ovy = get_nparray_from_matrix(x.value[1, :])
