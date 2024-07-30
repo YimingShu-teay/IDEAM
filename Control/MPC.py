@@ -326,13 +326,27 @@ class LMPC:
                 self.b_f = 2.2
                 oa = [0.0] * (self.T)
                 od = [0.0] * (self.T)               
-                ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
-                last_X = [ovx, ovy, owz, oS, oey, oepsi]
+                # ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
+                # # last_X = [ovx, ovy, owz, oS, oey, oepsi]
                 oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od, GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
                 self.Pw1 = np.diag([5.0,0.0])*0.1
                 self.Pw2 = np.diag([5.0,0.0])*0.1
                 self.b_f = 2.3
-
+                              
+                if oa is None:
+                    self.b_f = 2.2
+                    self.a_l = 1.3
+                    self.Pw1 = np.diag([0.0,0.0])*0.1
+                    self.Pw2 = np.diag([0.0,0.0])*0.1
+                    oa = [0.0] * (self.T)
+                    od = [0.0] * (self.T)               
+                    # ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
+                    # # last_X = [ovx, ovy, owz, oS, oey, oepsi]
+                    oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od, GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
+                    self.Pw1 = np.diag([5.0,0.0])*0.1
+                    self.Pw2 = np.diag([5.0,0.0])*0.1
+                    self.b_f = 2.3
+                    self.a_l = 1.5  
         return oa, od, ovx, ovy, owz, oS, oey, oepsi
 
 
@@ -360,7 +374,7 @@ class LMPC:
         
         if C_label_additive == "constraint":
             prediction_ahead, prediction_rear, prediction_sf_ego, prediction_sl_target, second_paraml, third_paraml, surround_constraints = self.utils.get_all_constraint(C_label,path_now,path_d,ego_group,path_ego,x0,x0_g,target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_virtual)
-            print("surround_constraints=",surround_constraints)
+            # print("prediction_ahead=",prediction_ahead)
 
             if prediction_ahead is not None:
                 a0_l,b0_l,c0_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,0], (x0[3],x0[4]))
@@ -430,7 +444,6 @@ class LMPC:
                 elif C_label_virtual == "L":
                     if path_now == 2:
                         constraints += [x[4,t] >= -4.5]
-
                     
                 elif  C_label_virtual == "R":
                     if path_now == 0:

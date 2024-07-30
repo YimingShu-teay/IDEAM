@@ -72,14 +72,25 @@ def repropagate(path_d,sample,x_list,y_list,x0_g,x0):
 
     return x_next
 
+def post_process(x0,desired_group):
+    # 这里比较一下 desired_group的前车与 ego vehicle 的距离
+    target_ahead = desired_group['sl'][0]
+    ego_s = x0[3]
+    print("target_ahead=",target_ahead)
+    print("ego_s=",ego_s)
+    dis = abs(target_ahead - ego_s)
+    is_short = False
+    if dis <= 6.0:
+        is_short = True
+    return is_short
+
 
 def Decision_info(x0,x0_g,path_center_list,sample_center,x_center,y_center,bound,desired_group,path_now,path_nowindex):
     #m貌似是这个地方的问题
-    print("x0_g=",x0_g)
     path_d = give_desired_path(desired_group,path_now)
     path_dindex = np.where(path_center_list==path_d)[0][0]
     sample,x_list,y_list = sample_center[path_dindex],x_center[path_dindex],y_center[path_dindex]
-    
+    # is_short = post_process(x0,desired_group)
     if path_now != path_d:
         if path_dindex > path_nowindex:
             C_label = "R"
