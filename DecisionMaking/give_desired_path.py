@@ -90,8 +90,8 @@ def Decision_info(x0,x0_g,path_center_list,sample_center,x_center,y_center,bound
     path_d = give_desired_path(desired_group,path_now)
     path_dindex = np.where(path_center_list==path_d)[0][0]
     sample,x_list,y_list = sample_center[path_dindex],x_center[path_dindex],y_center[path_dindex]
-    # is_short = post_process(x0,desired_group)
-    if path_now != path_d:
+    is_short = post_process(x0,desired_group)
+    if path_now != path_d and not is_short:
         if path_dindex > path_nowindex:
             C_label = "R"
         else:
@@ -102,9 +102,11 @@ def Decision_info(x0,x0_g,path_center_list,sample_center,x_center,y_center,bound
         return path_d, path_dindex,C_label, sample,x_list,y_list,x0_update
     
     else:
-        x0_update = repropagate(path_d,sample,x_list,y_list,x0_g,x0)
+        # x0_update = repropagate(path_d,sample,x_list,y_list,x0_g,x0)
+        sample,x_list,y_list = sample_center[path_nowindex],x_center[path_nowindex],y_center[path_nowindex]
+        x0_update = x0
         C_label = "K"
-        return path_d, path_dindex,C_label, sample, x_list, y_list,x0_update
+        return path_now, path_nowindex,C_label, sample, x_list, y_list,x0_update
     
     
     
