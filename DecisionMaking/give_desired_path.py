@@ -74,7 +74,10 @@ def repropagate(path_d,sample,x_list,y_list,x0_g,x0):
 
 def post_process(x0,desired_group):
     # 这里比较一下 desired_group的前车与 ego vehicle 的距离
-    target_ahead = desired_group['sl'][0]
+    if desired_group['sl'] is not None:
+        target_ahead = desired_group['sl'][0]
+    else:
+        target_ahead = 10000
     ego_s = x0[3]
     print("target_ahead=",target_ahead)
     print("ego_s=",ego_s)
