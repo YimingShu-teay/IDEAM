@@ -69,7 +69,8 @@ sodm_decision_maker = sodm(**sodm_param)
 mpc_controller = LMPC(**Constraint_params)
 mpc_controller.get_path_curvature(path=path2c)
 
-surroundings = Surrounding_Vehicles(steer_range,dt,boundary)
+params_dir = r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\file_save\22_200"
+surroundings = Surrounding_Vehicles(steer_range,dt,boundary,params_dir)
 
 util_params_ = util_params()
 utils = LeaderFollower_Uitl(**util_params_)
@@ -82,6 +83,7 @@ path_changed = 1
 ################## metrics record ##############
 S_obs_record = [] # 与障碍物的最小距离
 initial_params = [surroundings.left_initial_set,surroundings.center_initial_set,surroundings.right_initial_set] #初始时刻的障碍物参数
+initial_vds = [surroundings.vd_left_all,surroundings.vd_center_all,surroundings.vd_right_all]
 progress_20, progress_40 = 0.0, 0.0
 TTC_record = []
 vel = []
@@ -89,7 +91,7 @@ acc = []
 steer_record = []
 path_record = []
 lane_state_record = []
-
+C_label_record = []
 
 for i in range(N_t):
     bar.next()
@@ -154,22 +156,23 @@ for i in range(N_t):
     vel.append(X0[0])
     
     lane_state_record.append(C_label)
+    C_label_record.append(C_label)
     path_record.append(path_now)
     
     
-    # if i == 200:
-    #     path_m, x_m, y_m, samples_m = get_path_info(1)
-    #     s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
-    #     progress_20 = s_m
-    #     metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,acc,steer_record,lane_state_record,path_record,"200")
+    if i == 200:
+        path_m, x_m, y_m, samples_m = get_path_info(1)
+        s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
+        progress_20 = s_m
+        metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,acc,steer_record,lane_state_record,path_record,C_label_record,initial_vds,"200",comparison="Comparison_FSM")
 
         
-    # if i == 400:
-    #     path_m, x_m, y_m, samples_m = get_path_info(1)
-    #     s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
-    #     progress_40 = s_m 
-    #     metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,acc,steer_record,lane_state_record,path_record,"400")
-    #     break
+    if i == 400:
+        path_m, x_m, y_m, samples_m = get_path_info(1)
+        s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
+        progress_40 = s_m 
+        metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,acc,steer_record,lane_state_record,path_record,C_label_record,initial_vds,"400",comparison="Comparison_FSM")
+        break
     
     
      
