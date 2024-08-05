@@ -33,7 +33,8 @@ class MOBIL:
         Returns:
             float: vehicle acceleration
         """
-
+        if surrounding_v is None:
+            surrounding_v = 20.0
         delta_v = v - surrounding_v
         s_star = self.s_0 + max(0, self.T * v + (v * delta_v) / (2 * math.sqrt(self.a * self.b)))
 
@@ -72,20 +73,29 @@ class MOBIL:
 
         return change_incentive and safety_criterion, new_front_acceleration - current_acceleration
     
-    def make_decision_oneside(self, s_e, v_e, vl_e, sl_e, group):    
+    def make_decision_oneside(self, s_e, v_e, vl_e, sl_e, group): 
+        print("group=",group)   
         if group['sl'] is not None:
             sl= group['sl'][0]
             vl = group['vl'][0]
         else:
             sl= 3000.0
             vl = 100.0          
+
+        if group['sf'] is not None:
+            sf= group['sf'][0]
+            vf = group['vf'][0]
+            proj_f = group['proj_f']
+        else:
+            sf= 0.0
+            vf = 0.0             
+            proj_f = -100.0
         
-        sf = group['sf'][0]
-        vf = group['vf'][0]
-        
-        proj_f = group['proj_f']
         old_distance_lf = sl - sf
         
+        if sl_e is None:
+            sl_e = 3000.0
+            sl_e = 100.0
         new_distance_le = sl - s_e
         old_distance_le = sl_e - s_e
         
