@@ -69,7 +69,7 @@ decision_maker = decision(**decision_param)
 mpc_controller = LMPC(**Constraint_params)
 mpc_controller.get_path_curvature(path=path2c)
 
-params_dir = r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\file_save\7_200"
+params_dir = r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\file_save\14_200"
 surroundings = Surrounding_Vehicles(steer_range,dt,boundary,params_dir)
 
 util_params_ = util_params()

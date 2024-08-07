@@ -74,7 +74,7 @@ class MOBIL:
         return change_incentive and safety_criterion, new_front_acceleration - current_acceleration
     
     def make_decision_oneside(self, s_e, v_e, vl_e, sl_e, group): 
-        print("group=",group)   
+
         if group['sl'] is not None:
             sl= group['sl'][0]
             vl = group['vl'][0]
