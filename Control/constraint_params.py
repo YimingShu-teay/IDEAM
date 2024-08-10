@@ -18,7 +18,7 @@ def constraint_params():
     MIN_DSTEER = math.radians(-15.0)
     R = np.diag([1.0,80.0])*0.1
     Rd = np.diag([0.0,8.0])*0.1
-    Q_compare = np.diag([2.0,6.0,10.0,0.0,100.0,100.0])
+    Q_compare = np.diag([2.0,6.0,10.0,0.0,50.0,100.0])*0.1
     Q = [np.diag([2.0,40.0,40.0,0.0,60.0,70.0])*0.1,
           np.diag([2.0,40.0,40.0,0.0,60.0,70.0])*0.1,
           np.diag([2.0,40.0,40.0,0.0,60.0,70.0])*0.1,
@@ -77,7 +77,7 @@ def constraint_params():
     gamma_r = 0.9
     a_l = 1.5
     b_l = 2.2
-    a_f = 1.8
+    a_f = 1.5
     b_f = 2.3 #这里的参数需要改可变，还要de一下hocbf里的delta的bug
     dt = 0.1
     
