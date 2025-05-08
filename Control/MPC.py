@@ -2,6 +2,7 @@ import sys
 sys.path.append(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_improve") 
 import numpy as np
 import cvxpy
+import openpyxl
 from casadi import *
 from Control.utils import *
 from Model.Dynamical_model import *
@@ -310,15 +311,13 @@ class LMPC:
         MPC control with updating operational point iteratively
         """
         # ovx, ovy, ow, os, oey, oepsi, oa, od = None, None, None, None, None, None, None, None
-        print("oa",oa is None)
+
         if oa is None or od is None:
             oa = [0.0] * (self.T)
             od = [0.0] * (self.T)
 
         for i in range(self.MAX_ITER):   
             oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label, C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
-            print("oa=",oa)
-            print("ob=",od)
             if oa is None:
                 print("Solve again!!!!")
                 self.Pw1 = np.diag([0.0,0.0])*0.1
@@ -335,7 +334,8 @@ class LMPC:
                               
                 if oa is None:
                     self.b_f = 2.2
-                    self.a_l = 1.3
+                    self.a_l = 1.2
+                    self.b_l = 1.8
                     self.Pw1 = np.diag([0.0,0.0])*0.1
                     self.Pw2 = np.diag([0.0,0.0])*0.1
                     oa = [0.0] * (self.T)
@@ -346,7 +346,10 @@ class LMPC:
                     self.Pw1 = np.diag([5.0,0.0])*0.1
                     self.Pw2 = np.diag([5.0,0.0])*0.1
                     self.b_f = 2.3
-                    self.a_l = 1.5  
+                    self.a_l = 1.5 
+                    self.b_l = 2.2
+
+        
         return oa, od, ovx, ovy, owz, oS, oey, oepsi
 
 
@@ -628,11 +631,49 @@ class LMPC:
             oepsi = get_nparray_from_matrix(x.value[5, :])
             oa = get_nparray_from_matrix(u.value[0, :])
             odelta = get_nparray_from_matrix(u.value[1, :])
+            
+            # ecos_time = prob.solver_stats.solve_time  # 求解时间（单位：秒）
+            # print(f"ECOS solver time: {ecos_time:.6f} seconds")
+            # wb = openpyxl.load_workbook("solver_times.xlsx")
+            # sheet = wb["Solver Times"]
+
+            # # 将新的求解时间追加到工作表
+            # sheet.append(["ECOS", ecos_time])
+
+            # # 保存更新后的文件
+            # wb.save("solver_times.xlsx")
+
         else:
             print("Error: Cannot solve mpc..")
             ovx, ovy, owz, os, oey, oepsi, oa, odelta   = None, None, None, None, None, None, None, None
         return oa, odelta, ovx, ovy, owz, os, oey, oepsi
                       
+
+    def iterative_linear_mpc_control_for_comparison(self, x0, oa, od, dt, GPR_vy, GPR_w, label, x0_g, path_d,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex):
+        """
+        MPC control with updating operational point iteratively
+        """
+        ovx, ovy, ow, os, oey, oepsi, oa, od = None, None, None, None, None, None, None, None
+
+        if oa is None or od is None:
+            oa = [0.0] * (self.T)
+            od = [0.0] * (self.T)
+
+        for i in range(self.MAX_ITER):   
+            oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_for_comparison(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label, last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
+            if oa is None:
+                print("Solve again!!!!")
+                oa = [0.0] * (self.T)
+                od = [0.0] * (self.T)               
+                ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
+                last_X = [ovx, ovy, owz, oS, oey, oepsi]
+                oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_for_comparison(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
+            # du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
+            # if du <= self.DU_TH:
+            #     break
+        else:
+            print("Iterative is max iter")
+        return oa, od, ovx, ovy, owz, oS, oey, oepsi
 
     def iterative_linear_mpc_control_for_comparison(self, x0, oa, od, dt, GPR_vy, GPR_w, label, x0_g, path_d,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex):
         """
@@ -823,7 +864,7 @@ class LMPC:
         """
         MPC control with updating operational point iteratively
         """
-        ovx, ovy, ow, os, oey, oepsi, oa, od = None, None, None, None, None, None, None, None
+        # ovx, ovy, ow, os, oey, oepsi, oa, od = None, None, None, None, None, None, None, None
 
         if oa is None or od is None:
             oa = [0.0] * (self.T)
@@ -833,16 +874,33 @@ class LMPC:
             oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep_for_noadapt(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label, C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
             if oa is None:
                 print("Solve again!!!!")
+                self.Pw1 = np.diag([0.0,0.0])*0.1
+                self.Pw2 = np.diag([0.0,0.0])*0.1
+                self.b_f = 2.2
                 oa = [0.0] * (self.T)
-                od = [0.0] * (self.T)               
-                ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
-                last_X = [ovx, ovy, owz, oS, oey, oepsi]
+                od = [0.0] * (self.T)  
+                print("Solve again!!!!")            
+                # ovx, ovy, owz, oS, oey, oepsi = clac_last_X(oa,od,self.T,path_d,dt,self.NX,x0,x0_g)
+                # last_X = [ovx, ovy, owz, oS, oey, oepsi]
                 oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep_for_noadapt(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
-            # du = sum(abs(oa - poa)) + sum(abs(od - pod))  # calc u change value
-            # if du <= self.DU_TH:
-            #     break
-        else:
-            print("Iterative is max iter")
+                self.Pw1 = np.diag([5.0,0.0])*0.1
+                self.Pw2 = np.diag([5.0,0.0])*0.1
+                self.b_f = 2.3
+                              
+                if oa is None:
+                    self.b_f = 2.2
+                    self.a_l = 1.2
+                    self.b_l = 1.8
+                    self.Pw1 = np.diag([0.0,0.0])*0.1
+                    self.Pw2 = np.diag([0.0,0.0])*0.1
+                    oa = [0.0] * (self.T)
+                    od = [0.0] * (self.T) 
+                    oa, od, ovx, ovy, owz, oS, oey, oepsi = self.iMPC_solve_OneStep_for_noadapt(path_d, path_dindex,x0, x0_g, oa, od,  GPR_vy, GPR_w, label,C_label_additive,C_label_virtual,last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right)
+                    self.Pw1 = np.diag([5.0,0.0])*0.1
+                    self.Pw2 = np.diag([5.0,0.0])*0.1
+                    self.b_f = 2.3
+                    self.a_l = 1.5 
+                    self.b_l = 2.2
 
         return oa, od, ovx, ovy, owz, oS, oey, oepsi
 
@@ -877,14 +935,16 @@ class LMPC:
                 a0_l,b0_l,c0_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,0], (x0[3],x0[4]))
                 psi_0_0_l = a0_l * x0[3] + b0_l * x0[4] + c0_l # 0's time DHOCBF in this iteration
                 
-                a1_l,b1_l,c1_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,1], [oS_esti[1],oey_esti[1]])
+                a1_l,b1_l,c1_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,1], [oS_esti[2],oey_esti[2]])
                 psi_0_1_l = a1_l * x[3,1] + b1_l * x[4,1] + c1_l        
             
             if prediction_rear is not None:
+                print("prediction_rear[:,0]=",prediction_rear[:,0])
+                print("(x0[3],x0[4])=",(x0[3],x0[4]))
                 a0_f,b0_f,c0_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[:,0], (x0[3],x0[4]))
                 psi_0_0_f = a0_f * x0[3] + b0_f * x0[4] + c0_f # 0's time DHOCBF in this iteration
                 
-                a1_f,b1_f,c1_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[:,1], [oS_esti[1],oey_esti[1]])
+                a1_f,b1_f,c1_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[:,1], [oS_esti[2],oey_esti[2]])
                 psi_0_1_f = a1_f * x[3,1] + b1_f * x[4,1] + c1_f              
         
         elif C_label_additive == "Probe":
@@ -895,7 +955,7 @@ class LMPC:
                 a0_l,b0_l,c0_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,0], (x0[3],x0[4]))
                 psi_0_0_l = a0_l * x0[3] + b0_l * x0[4] + c0_l # 0's time DHOCBF in this iteration
                 
-                a1_l,b1_l,c1_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,1], [oS_esti[1],oey_esti[1]])
+                a1_l,b1_l,c1_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,1], [oS_esti[2],oey_esti[2]])
                 psi_0_1_l = a1_l * x[3,1] + b1_l * x[4,1] + c1_l   
                 
         elif C_label_additive == "No Probe":
@@ -911,7 +971,6 @@ class LMPC:
         for t in range(self.T):
 
             cost += cvxpy.quad_form(u[:, t], self.R)
-            cost += cvxpy.quad_form(d[:, t], self.P)
         
             
             #对于 follower 的约束
@@ -925,36 +984,56 @@ class LMPC:
             if t != 0:
                 cost += cvxpy.quad_form(reference[:, t] - x[:, t], self.Q[t])
                 cost += cvxpy.quad_form(u[:, t] - u[:, t-1], self.Rd)
+                # constraints for lane restriction
+                if C_label_virtual == "K":
+                    if path_now == 0:
+                        constraints += [x[4,t] <= 4.5]
+                    elif path_now == 2:
+                        constraints += [x[4,t] >= -4.5]
+                    elif path_now == 1:
+                        cost += cvxpy.quad_form(d[:, t], self.P)
+                        constraints += [x[4,t] <= 0.01 + d[0,t]]
+                        constraints += [x[4,t] + d[1,t] >= -0.01]
 
+                    
+                elif C_label_virtual == "L":
+                    if path_now == 2:
+                        constraints += [x[4,t] >= -4.5]
+                    
+                elif  C_label_virtual == "R":
+                    if path_now == 0:
+                        constraints += [x[4,t] <= 4.5]
+                
                 if C_label_additive == "constraint":
-                    if prediction_ahead is not None and t <=15:
+                    print("constraint here")
+                    if prediction_ahead is not None and t <=20:
                         cost += cvxpy.quad_form(([1,0]-w1[:,t]), self.Pw1)
                         cost += cvxpy.quad_form(slack_hocbf1[:,t], self.Rhocbf1)
-                        at_l,bt_l,ct_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t],oey_esti[t]])
+                        at_l,bt_l,ct_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                         psi_t_l = at_l * x[3,t] + bt_l * x[4,t] + ct_l
                         constraints += [psi_t_l + slack_hocbf1[0,t]>= w1[0,t]*(1-self.gamma1)**t * psi_0_0_l]
-                        constraints += [psi_t_l >= w1[0,t]*(1-self.gamma1)**t * psi_0_0_l]
+                        # constraints += [psi_t_l >= w1[0,t]*(1-self.gamma1)**t * psi_0_0_l]
                         
-                        if  t <15 and t > 0:
+                        if  t <20 and t > 0:
                             cost += cvxpy.quad_form(([1,0]-w2[:,t]), self.Pw2)
                             cost += cvxpy.quad_form(slack_hocbf2[:,t], self.Rhocbf2)
-                            at_l_1,bt_l_1,ct_l_1 = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t],oey_esti[t]])
+                            at_l_1,bt_l_1,ct_l_1 = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                             psi_0_tplus1_l = at_l_1 * x[3,t+1] + bt_l_1 * x[4,t+1] + ct_l_1
                             constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l + slack_hocbf2[0,t]>= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
                             constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
 
-                    if prediction_rear is not None and t <= 15:
+                    if prediction_rear is not None and t <= 20:
                         cost += cvxpy.quad_form(([1,0]-w1[:,t]), self.Pw1)
                         cost += cvxpy.quad_form(slackf_hocbf1[:,t], self.Rhocbf1)
-                        at_f,bt_f,ct_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[0:2,t], [oS_esti[t],oey_esti[t]])
+                        at_f,bt_f,ct_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                         psi_t_f = at_f * x[3,t] + bt_f * x[4,t] + ct_f
                         constraints += [psi_t_f + slackf_hocbf1[0,t]>= w1[0,t]*(1-self.gamma1)**t * psi_0_0_f]
-                        constraints += [psi_t_f >= w1[0,t]*(1-self.gamma1)**t * psi_0_0_f]
+                        # constraints += [psi_t_f >= w1[0,t]*(1-self.gamma1)**t * psi_0_0_f]
                         
-                        if t < 15 and t > 0:
+                        if t < 20 and t > 0:
                             cost += cvxpy.quad_form(([1,0]-w2[:,t]), self.Pw2)
                             cost += cvxpy.quad_form(slackf_hocbf2[:,t], self.Rhocbf2)
-                            at_f_1,bt_f_1,ct_f_1 = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[0:2,t], [oS_esti[t],oey_esti[t]])
+                            at_f_1,bt_f_1,ct_f_1 = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                             psi_0_tplus1_f = at_f_1 * x[3,t+1] + bt_f_1 * x[4,t+1] + ct_f_1
                             constraints += [psi_0_tplus1_f + (self.gamma1-1)*psi_t_f - (1-self.gamma2)**t * psi_0_1_f + slackf_hocbf2[0,t]>= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_f]
                             constraints += [psi_0_tplus1_f + (self.gamma1-1)*psi_t_f - (1-self.gamma2)**t * psi_0_1_f >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_f]
@@ -967,24 +1046,26 @@ class LMPC:
                         constraints += [Delta_h_t + self.gamma_r*ht_t + slack_cbf_tl[0,t]>= 0]
 
                 if C_label_additive == "Probe":
-                    if prediction_ahead is not None and t <=15:
+                    print("probing here")
+                    if prediction_ahead is not None and t <=20:
                         cost += cvxpy.quad_form(([1,0]-w1[:,t]), self.Pw1)
                         cost += cvxpy.quad_form(slack_hocbf1[:,t], self.Rhocbf1)
-                        at_l,bt_l,ct_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t],oey_esti[t]])
+                        at_l,bt_l,ct_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                         psi_t_l = at_l * x[3,t] + bt_l * x[4,t] + ct_l
                         constraints += [psi_t_l + slack_hocbf1[0,t]>= w1[0,t]*(1-self.gamma1)**t * psi_0_0_l]
-                        constraints += [psi_t_l >= w1[0,t]*(1-self.gamma1)**t * psi_0_0_l]
+                        # constraints += [psi_t_l >= w1[0,t]*(1-self.gamma1)**t * psi_0_0_l]
                         
-                        if t < 15 and t > 0:
+                        if t < 20 and t > 0:
                             cost += cvxpy.quad_form(([1,0]-w2[:,t]), self.Pw2)
                             cost += cvxpy.quad_form(slack_hocbf2[:,t], self.Rhocbf2)
-                            at_l_1,bt_l_1,ct_l_1 = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t],oey_esti[t]])
+                            at_l_1,bt_l_1,ct_l_1 = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[0:2,t], [oS_esti[t+1],oey_esti[t+1]])
                             psi_0_tplus1_l = at_l_1 * x[3,t+1] + bt_l_1 * x[4,t+1] + ct_l_1
                             constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l + slack_hocbf2[0,t]>= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
-                            constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
+                            # constraints += [psi_0_tplus1_l + (self.gamma1-1)*psi_t_l - (1-self.gamma2)**t * psi_0_1_l >= w2[0,t]*(self.gamma1-1)*(1-self.gamma2)**t*psi_0_0_l]
                                         
             # longitudinal constraints in ego lane
             if C_label_additive == "No Probe":
+                print("keep here")
                 if prediction_sl_ego is not None:
                     cost += cvxpy.quad_form(slack_cbf[:, t], self.Rs)
                     ht = prediction_sl_ego[t]-x[3,t]-second_paraml[t]*x[0,t]-third_paraml[t]-self.vehicle_length
@@ -1014,20 +1095,7 @@ class LMPC:
                 if dL_min_surround is not None:
                     cost += cvxpy.quad_form(slack_surroundl[:,t], self.Rssl)
                     constraints += [x[4,t] + slack_surroundl[0,t]<= dL_min_surround[t]]
-
-            # constraints for lane restriction
-            if C_label_virtual == "K":
-                constraints += [x[4,t] <= 0.01 + d[0,t]]
-                constraints += [x[4,t] + d[1,t] >= -0.01]
-            #    constraints += [d[:,t] >= 0]
-                
-            elif C_label_virtual == "L":
-                constraints += [x[4,t] <= -3.45 + d[0,t]]
-            #    constraints += [d[:,t] >= 0]
-                
-            elif  C_label_virtual == "R":
-                constraints += [x[4,t] + d[0,t] >= 3.45]
-            #    constraints += [d[:,t] >= 0]
+                    
  
             A, B, C = ugv.linearized_discretization(xbar[:,t], dref[:,t], k_profile[0,t], self.dt)
             
@@ -1058,7 +1126,7 @@ class LMPC:
             dL_min_surround,dR_min_surround = surround_constraints
             if dL_min_surround is not None:
                 cost += cvxpy.quad_form(slack_surroundl[:,self.T-1], self.Rssl)
-                constraints += [x[4,self.T] + slack_surroundl[1,self.T-1]<= dL_min_surround[self.T]]
+                constraints += [x[4,self.T] + slack_surroundl[0,self.T-1]<= dL_min_surround[self.T]]
                 
             if dR_min_surround is not None:
                 cost += cvxpy.quad_form(slack_surroundr[:,self.T-1], self.Rssr)
@@ -1066,24 +1134,34 @@ class LMPC:
                 
         elif path_now == 2:
             dL_min_surround = surround_constraints
+            print("dL_min_surround=",dL_min_surround)
             if dL_min_surround is not None:
                 cost += cvxpy.quad_form(slack_surroundl[:,self.T-1], self.Rssl)
                 constraints += [x[4,self.T] + slack_surroundl[0,self.T-1]<= dL_min_surround[self.T]]
-
+                constraints += [slack_surroundl[0,self.T-1] >=0]
+        
         # constraints for lane restriction
         if  C_label_virtual == "K":
-            constraints += [x[4,self.T] <= 0.01 + d[0,self.T-1]]
-            constraints += [x[4,self.T] + d[1,self.T-1] >= -0.01]
-            # constraints += [d[:,self.T-1] >= 0]
+            if path_now == 0:
+                constraints += [x[4,self.T] <= 4.5]
+            elif path_now == 2:
+                constraints += [x[4,self.T] >= -4.5]
+            elif path_now == 1:
+                cost += cvxpy.quad_form(d[:, self.T-1], self.P)
+                constraints += [x[4,self.T] <= 0.01 + d[0,self.T-1]]
+                constraints += [x[4,self.T] + d[1,self.T-1] >= -0.01]
+
             
         elif C_label_virtual == "L":
-            constraints += [x[4,self.T]  <= -3.45 + d[0,self.T-1]]
-            # constraints += [d[:,self.T-1] >= 0]
+                if path_now == 2:
+                    constraints += [x[4,self.T] >= -4.5]
+
             
         elif C_label_virtual == "R":
-            constraints += [x[4,self.T] + d[0,self.T-1] >= 3.45]
-            # constraints += [d[:,self.T-1] >= 0]
-     
+                if path_now == 0:
+                    constraints += [x[4,self.T] <= 4.5]
+
+        
         constraints += [x[:, 0] == x0[:]]
         constraints += [u[0, :] <= self.MAX_ACCEL ]
         constraints += [u[0, :] >= self.MIN_ACCEL]
@@ -1094,7 +1172,11 @@ class LMPC:
         # constraints += [x[5,:] <= np.pi]
         
         prob = cvxpy.Problem(cvxpy.Minimize(cost), constraints)
-        prob.solve(solver=cvxpy.ECOS, verbose=False)
+        try:            
+            prob.solve(solver=cvxpy.ECOS, verbose=False)
+        except:
+            print("Error: Cannot solve mpc..")
+            ovx, ovy, owz, os, oey, oepsi, oa, odelta   = None, None, None, None, None, None, None, None            
         if prob.status == cvxpy.OPTIMAL or prob.status == cvxpy.OPTIMAL_INACCURATE:
             ovx = get_nparray_from_matrix(x.value[0, :])
             ovy = get_nparray_from_matrix(x.value[1, :])

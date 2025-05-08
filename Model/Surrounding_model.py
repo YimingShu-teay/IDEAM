@@ -87,7 +87,4 @@ class Curved_Road_Vehicle:
         
         return x_next, y_next, yaw_next, v_next, steer_angle, a
     
-    
 
-        
-        

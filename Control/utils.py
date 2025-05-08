@@ -17,6 +17,7 @@ from Model.params import params
 from scipy.ndimage import rotate
 import pickle
 import time
+import random
 
 dirpath = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
@@ -45,31 +46,80 @@ def normalize_angle(angle):
 
     return angle
 
-def plot_car(x, y, yaw_rad, length=5.0, width=2.0, color='blue'):
 
-    car = patches.Rectangle((x - length / 2, y - width / 2), length, width, color=color,zorder=2)
-
+def plot_car(x, y, yaw_rad, length=5.0, width=2.0, color='blue', border_width=4, alpha=0.6):
+    # Create the main car rectangle
+    car = patches.Rectangle((x - length / 2, y - width / 2), length, width, color=color, zorder=2)
+    
+    # Create the outer border rectangle
+    border_rect = patches.Rectangle((x - length / 2, y - width / 2), length, width, linewidth=border_width, edgecolor=color, facecolor='none', alpha=alpha, zorder=3)
+    
     yaw_deg = np.rad2deg(yaw_rad)
-
+    
+    # Create the transformation
     transform = Affine2D().rotate_deg_around(x, y, yaw_deg) + plt.gca().transData
-
+    
+    # Apply the transformation to both rectangles
     car.set_transform(transform)
+    border_rect.set_transform(transform)
     
+    # Add both rectangles to the plot
     plt.gca().add_patch(car)
+    plt.gca().add_patch(border_rect)
 
 
-# car_image = plt.imread("C:\\Users\\sym02\\Desktop\\Research\\Extension\\codes\\controller_improve 2\\figsave\\car2.png")
-# def plot_car(x, y, yaw_rad, length=5.0, width=2.0, color='blue'):
 
-#     yaw_deg = np.rad2deg(yaw_rad)
-#     rotated_image = rotate(car_image, angle=yaw_deg, reshape=True)
+car_image = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\black&white.png")
+def plot_car(x, y, yaw_rad, length=5.0, width=2.0):
+    # 将偏航角从弧度转换为度数
+    yaw_deg = np.rad2deg(yaw_rad)
+    # 旋转图片
+    rotated_image = rotate(car_image, angle=yaw_deg, reshape=True)
+
+    # 调整缩放以匹配目标长宽比
+    zoom_x = 0.4
+    zoom_y = 0.28
+
+    # 使用OffsetImage和extent进行缩放
+    imagebox = offsetbox.OffsetImage(rotated_image, zoom=min(zoom_x, zoom_y))
     
-#     imagebox = offsetbox.OffsetImage(rotated_image, zoom=0.13)
+    # 添加图片到图表中
+    ab = offsetbox.AnnotationBbox(imagebox, (x, y), frameon=False)
+    plt.gca().add_artist(ab)
     
-#     ab = offsetbox.AnnotationBbox(imagebox, (x, y), frameon=False)
+car_image_surround_1 = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\yellow.png")
+car_image_surround_2 = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\red.png")
+# car_image_surround = random.choice([car_image_surround_1, car_image_surround_2])
+def plot_car_surround(x, y, yaw_rad, i,lane):
+    # 根据 i 的奇偶性选择图片
+    if lane=="left" or lane=="right":
+        if i % 2 == 1:
+            car_image_surround = car_image_surround_1
+        else:
+            car_image_surround = car_image_surround_2
+    elif lane=="center":
+        if i % 2 == 1:
+            car_image_surround = car_image_surround_2
+        else:
+            car_image_surround = car_image_surround_1  
     
 
-#     plt.gca().add_artist(ab)
+    # 将偏航角从弧度转换为度数
+    yaw_deg = np.rad2deg(yaw_rad)
+    
+    # 旋转图片
+    rotated_image = rotate(car_image_surround, angle=yaw_deg, reshape=True)
+
+    # 调整缩放以匹配目标长宽比
+    zoom_x = 0.4
+    zoom_y = 0.28
+
+    # 使用OffsetImage和extent进行缩放
+    imagebox = offsetbox.OffsetImage(rotated_image, zoom=min(zoom_x, zoom_y))
+    
+    # 添加图片到图表中
+    ab = offsetbox.AnnotationBbox(imagebox, (x, y), frameon=False)
+    plt.gca().add_artist(ab)
 
 
 # def plot_car_on_trajectory(trajectory, car_image_path):
@@ -329,13 +379,18 @@ def create_rectangle(center_x, center_y, width, height, psi):
     return Polygon(global_corners)
 
 
-def metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,acc,steer_record,lane_state_record,path_record,C_label_record,initial_vds,iter_num,round_=None):
-    metrics_dict = {"S_obs_record":S_obs_record,"initial_params":initial_params,"progress_20":progress_20,"progress_40":progress_40,"TTC_record":TTC_record,"vel":vel,"acc":acc,"steer_record":steer_record,"lane_state_record":lane_state_record,"path_record":path_record,"C_label_record":C_label_record,"initial_vds":initial_vds}
+def metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,vys,ys,acc,steer_record,lane_state_record,path_record,C_label_record,initial_vds,iter_num,round_=None,comparison=None):
+    metrics_dict = {"S_obs_record":S_obs_record,"initial_params":initial_params,"progress_20":progress_20,"progress_40":progress_40,"TTC_record":TTC_record,"vel":vel,"acc":acc,"steer_record":steer_record,"lane_state_record":lane_state_record,"path_record":path_record,"C_label_record":C_label_record,"initial_vds":initial_vds,"vys":vys,"ys":ys}
     if round_ is None:
         time_now = str(time.time()) + iter_num
     else:
         time_now = round_ + "_" + iter_num
-    file = open("C:\\Users\\sym02\\Desktop\\Research\\Extension\\codes\\decision_change_rear\\file_save\\" + time_now, 'wb')
+        print("time_now=",time_now)
+    if comparison is not None:
+        file = open("C:\\Users\\sym02\\Desktop\\Research\\Extension\\codes\\decision_change_rear\\"+ comparison + "\\file_save\\" + time_now, 'wb')
+    else:
+        print("herea")
+        file = open("C:\\Users\\sym02\\Desktop\\Research\\Extension\\codes\\decision_change_rear\\file_save\\" + time_now, 'wb')
     pickle.dump(metrics_dict, file)
     file.close()
     

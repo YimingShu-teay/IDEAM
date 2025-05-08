@@ -7,7 +7,7 @@ from Model.surrounding_params import *
 import random
 import pickle
 from Path.path import *
-from Control.utils import find_frenet_coord, plot_car, create_rectangle
+from Control.utils import find_frenet_coord, plot_car_surround, create_rectangle
 
 param = surrounding_params()
 
@@ -44,6 +44,8 @@ class Surrounding_Vehicles:
         
         self.dt = dt
         self.bound = bound
+        
+        self.give_carfig_value()
         
     def vehicle_initialization(self):
         return [Curved_Road_Vehicle(**param), Curved_Road_Vehicle(**param), Curved_Road_Vehicle(**param), Curved_Road_Vehicle(**param),Curved_Road_Vehicle(**param)]
@@ -93,6 +95,14 @@ class Surrounding_Vehicles:
         self.update_vehicle_states(self.center_vehicle_all,self.vehicle_center,self.vd_center_all,path2c,samples2c,x2c,y2c)
         self.update_vehicle_states(self.right_vehicle_all,self.vehicle_right,self.vd_right_all,path3c,samples3c,x3c,y3c)
     
+    def total_update_emergency(self,i):
+        vd_vehicles = self.vd_left_all
+        if i > 70 and vd_vehicles[1] >=6:
+            vd_vehicles[1] = vd_vehicles[1] - 0.8
+        self.update_vehicle_states(self.left_vehicle_all,self.vehicle_left,self.vd_left_all,path1c,samples1c,x1c,y1c)
+        self.update_vehicle_states(self.center_vehicle_all,self.vehicle_center,self.vd_center_all,path2c,samples2c,x2c,y2c)
+        self.update_vehicle_states(self.right_vehicle_all,self.vehicle_right,self.vd_right_all,path3c,samples3c,x3c,y3c)
+        
     def get_vehicles_states(self):
         return self.vehicle_left, self.vehicle_center, self.vehicle_right
     
@@ -105,17 +115,42 @@ class Surrounding_Vehicles:
             path_ego = path3c
         return path_ego
     
+    def get_vehicles_carfig(self):
+        car_image_surround_1 = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\yellow.png")
+        car_image_surround_2 = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\red.png")
+        car_image_surround = random.choice([car_image_surround_1, car_image_surround_2])
+        return car_image_surround
+    
+    
+    def give_carfig_value(self):
+        self.left_lane_carfig = []
+        self.center_lane_carfig = []
+        self.right_lane_carfig = []
+        for i in range(self.singleLane_num):
+            self.left_lane_carfig.append(self.get_vehicles_carfig())
+        for i in range(self.singleLane_num):
+            self.center_lane_carfig.append(self.get_vehicles_carfig())
+        for i in range(self.singleLane_num):
+            self.right_lane_carfig.append(self.get_vehicles_carfig())         
+
+    
     def plot_vehicles(self,vehicle_length,vehicle_width,color):
         for i in range(self.singleLane_num):
-            plot_car(self.vehicle_left[i][3],self.vehicle_left[i][4],self.vehicle_left[i][5],length=vehicle_length, width=vehicle_width,color=color)
-            plt.text(self.vehicle_left[i][3]-1.3,self.vehicle_left[i][4]-0.3, "{} m/s".format(round(self.vehicle_left[i][6],1)),c='blue',fontsize=4,style='oblique')
-            plt.text(self.vehicle_left[i][3]-1.3,self.vehicle_left[i][4]+0.6, "{} m".format(round(self.vehicle_left[i][0],1)),c='blue',fontsize=4,style='oblique')
-            plot_car(self.vehicle_center[i][3],self.vehicle_center[i][4],self.vehicle_center[i][5],length=vehicle_length, width=vehicle_width,color=color)
-            plt.text(self.vehicle_center[i][3]-1.3,self.vehicle_center[i][4]-0.3, "{} m/s".format(round(self.vehicle_center[i][6],1)),c='k',fontsize=4,style='oblique')
-            plt.text(self.vehicle_center[i][3]-1.3,self.vehicle_center[i][4]+0.6, "{} m".format(round(self.vehicle_center[i][0],1)),c='k',fontsize=4,style='oblique')
-            plot_car(self.vehicle_right[i][3],self.vehicle_right[i][4],self.vehicle_right[i][5],length=vehicle_length, width=vehicle_width,color=color)
-            plt.text(self.vehicle_right[i][3]-1.3,self.vehicle_right[i][4]-0.3, "{} m/s".format(round(self.vehicle_right[i][6],1)),c='k',fontsize=4,style='oblique')
-            plt.text(self.vehicle_right[i][3]-1.3,self.vehicle_right[i][4]+0.6, "{} m/s".format(round(self.vehicle_right[i][0],1)),c='k',fontsize=4,style='oblique')
+            X0_texts_left,X0_textey_left,_ = find_frenet_coord(path1c, x1c, y1c, samples1c,[self.vehicle_left[i][3],self.vehicle_left[i][4],self.vehicle_left[i][5]])
+            textx_left,texty_left = path1c.get_cartesian_coords(X0_texts_left-4.75, X0_textey_left-1.0)
+            plot_car_surround(self.vehicle_left[i][3],self.vehicle_left[i][4],self.vehicle_left[i][5],i,"left")
+            plt.text(textx_left,texty_left, "{} m/s".format(round(self.vehicle_left[i][6],1)),rotation=np.rad2deg(self.vehicle_left[i][5]),c='k',fontsize=5,style='oblique')
+            # plt.text(self.vehicle_left[i][3]-1.3,self.vehicle_left[i][4]+0.6, "{} m".format(round(self.vehicle_left[i][0],1)),c='blue',fontsize=4,style='oblique')
+            X0_texts_center,X0_textey_center,_ = find_frenet_coord(path2c, x2c, y2c, samples2c,[self.vehicle_center[i][3],self.vehicle_center[i][4],self.vehicle_center[i][5]])
+            textx_center,texty_center = path2c.get_cartesian_coords(X0_texts_center-4.75, X0_textey_center-1.0)
+            plot_car_surround(self.vehicle_center[i][3],self.vehicle_center[i][4],self.vehicle_center[i][5],i,"center")
+            plt.text(textx_center,texty_center, "{} m/s".format(round(self.vehicle_center[i][6],1)),rotation=np.rad2deg(self.vehicle_center[i][5]),c='k',fontsize=5,style='oblique')
+            # plt.text(self.vehicle_center[i][3]-1.3,self.vehicle_center[i][4]+0.6, "{} m".format(round(self.vehicle_center[i][0],1)),c='k',fontsize=4,style='oblique')
+            X0_texts_right,X0_textey_right,_ = find_frenet_coord(path3c, x3c, y3c, samples3c,[self.vehicle_right[i][3],self.vehicle_right[i][4],self.vehicle_right[i][5]])
+            textx_right,texty_right = path3c.get_cartesian_coords(X0_texts_right-4.75, X0_textey_right-1.0)
+            plot_car_surround(self.vehicle_right[i][3],self.vehicle_right[i][4],self.vehicle_right[i][5],i,"right")
+            plt.text(textx_right,texty_right, "{} m/s".format(round(self.vehicle_right[i][6],1)),rotation=np.rad2deg(self.vehicle_right[i][5]),c='k',fontsize=5,style='oblique')
+            # plt.text(self.vehicle_right[i][3]-1.3,self.vehicle_right[i][4]+0.6, "{} m/s".format(round(self.vehicle_right[i][0],1)),c='k',fontsize=4,style='oblique')
             
     def get_rectangles(self,vehicles):
         rectangles = []
