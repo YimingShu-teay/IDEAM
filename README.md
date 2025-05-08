@@ -4,6 +4,10 @@ This repository is the implementation of the TITS'25 paper:
 
 **Agile Decision-Making and Safety-Critical Motion Planning for Emergency Autonomous Vehicles**
 
+<video src="pictures\1 (online-video-cutter.com).mp4"></video>
+
+<video src="C:pictures\output_video_jiansu (online-video-cutter.com).mp4"></video>
+
 ## Installation
 
 ### Create conda env
