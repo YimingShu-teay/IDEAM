@@ -44,6 +44,13 @@ python multi_test.py
 python emergency_test.py
 ```
 
+### Note
+
+【1】You can use the 200 pre-randomly generated configuration files in `file_save` for testing, or alternatively, randomly generate new scenarios for testing.
+
+【2】When recording the time consumption, you need to separately track the statistics for C-DFS and LSGM in the same scene, as LSGM includes C-DFS, using `openpyxl.load_workbook` within the LSGM will result in incorrect duration statistics. Alternatively, you can use a different statistical method.
+
 ## Citation
 
 To be finished...
+
