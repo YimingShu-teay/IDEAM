@@ -6,7 +6,7 @@ This repository is the implementation of the TITS'25 paper:
 
 If you feel interested, ▶️ [Click to watch the video](https://www.youtube.com/watch?v=873BZoQSf-Q)
 
-<img src="assets/demo.gif" alt="demo" width="300" height="auto" />
+<img src="assets/demo.gif" alt="demo" style="max-width: 400px; height: auto;" />
 
 ## Installation
 
@@ -51,6 +51,8 @@ python emergency_test.py
 【1】You can use the 200 pre-randomly generated configuration files in `file_save` for testing, or alternatively, randomly generate new scenarios for testing.
 
 【2】When recording the time consumption, you need to separately track the statistics for C-DFS and LSGM in the same scene, as LSGM includes C-DFS, using `openpyxl.load_workbook` within the LSGM will result in incorrect duration statistics. Alternatively, you can use a different statistical method.
+
+【3】If you want to generate a video, make sure to save each frame as an image during the testing process.
 
 ## Citation
 
