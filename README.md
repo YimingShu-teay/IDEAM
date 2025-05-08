@@ -1,4 +1,4 @@
-# IDEAM
+# IDEAM-Integrated Agile Decision-Making with Active Motion Planning
 
 This repository is the implementation of the TITS'25 paper:
 
