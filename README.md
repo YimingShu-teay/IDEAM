@@ -4,7 +4,7 @@ This repository is the implementation of the TITS'25 paper:
 
 **Agile Decision-Making and Safety-Critical Motion Planning for Emergency Autonomous Vehicles**
 
-**<img src="C:\Users\sym02\Desktop\Research\Extension\codes\code_for_github\pictures\framework.png" alt="framework" style="zoom: 67%;" />**
+**<img src="pictures\framework.png" alt="framework" style="zoom: 67%;" />**
 
 ## Installation
 
