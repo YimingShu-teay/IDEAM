@@ -8,7 +8,6 @@ from Model.surrounding_params import *
 from Model.Surrounding_model import *
 from Model.surrounding_vehicles import *
 from Control.HOCBF import *
-from GPR.model_gp import *
 from DecisionMaking.decision_params import *
 from DecisionMaking.give_desired_path import *
 from DecisionMaking.util import *
@@ -17,6 +16,8 @@ from DecisionMaking.decision import *
 from Prediction.surrounding_prediction import *
 from progress.bar import Bar
 import time
+from multiprocessing import Pool
+
 
 def one_round(round_):
     time_now = int(time.time())
@@ -81,8 +82,6 @@ def one_round(round_):
     utils = LeaderFollower_Uitl(**util_params_)
     mpc_controller.set_util(utils)
 
-    GPR_vy = ModelGP(2)
-    GPR_w = ModelGP(2)
     path_changed = 1
 
     ################## metrics record ##############
@@ -99,7 +98,7 @@ def one_round(round_):
     C_label_record = []
 
 
-
+    last_desired_group = None
     for i in range(N_t):
         bar.next()
         ################## surrounding vehicles ###################
@@ -126,7 +125,7 @@ def one_round(round_):
         desired_group = decision_maker.decision_making(group_dict,start_group_str)
         path_d, path_dindex, C_label, sample,x_list,y_list,X0 = Decision_info(X0,X0_g,path_center,sample_center,x_center,y_center,boundary,desired_group,path_ego,path_now)
         C_label_additive = utils.inquire_C_state(C_label,desired_group)
-        
+        # last_desired_group = desired_group
         if C_label_additive == "Probe":
             path_d = path_ego
             path_dindex = path_now
@@ -156,6 +155,12 @@ def one_round(round_):
         C_label_record.append(C_label)
         path_record.append(path_now)
         
+        if i == 100:
+            path_m, x_m, y_m, samples_m = get_path_info(1)
+            s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
+            progress_20 = s_m
+            metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,acc,steer_record,lane_state_record,path_record,C_label_record,initial_vds,"100",round_)
+        
         if i == 200:
             path_m, x_m, y_m, samples_m = get_path_info(1)
             s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
@@ -170,7 +175,7 @@ def one_round(round_):
             break
         
         ################################# MPC solve and total env propogate ############           
-        oa, od, ovx, ovy, owz, oS, oey, oepsi = mpc_controller.iterative_linear_mpc_control(X0, oa, od, dt, GPR_vy, GPR_w, C_label,  X0_g, path_d, last_X, path_now, ego_group, path_ego, desired_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_additive,C_label_virtual) 
+        oa, od, ovx, ovy, owz, oS, oey, oepsi = mpc_controller.iterative_linear_mpc_control(X0, oa, od, dt, None, None, C_label,  X0_g, path_d, last_X, path_now, ego_group, path_ego, desired_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_additive,C_label_virtual) 
                                                             
         last_X = [ovx, ovy, owz, oS, oey, oepsi]
         
@@ -183,9 +188,13 @@ def one_round(round_):
 
         surroundings.total_update()
         
-rounds = [str(i) for i in range(131,200)]
+if __name__ == '__main__':
+    rounds = [str(i) for i in range(0,200)]
 
+    with Pool(processes=10) as pool:
+        results = pool.map(one_round, rounds)
 
-for round_ in rounds:
-    one_round(round_)
+# rounds = [str(i) for i in range(28,100)]
+# for round_ in rounds:
+#     one_round(round_)
     

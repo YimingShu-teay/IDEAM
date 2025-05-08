@@ -20,7 +20,6 @@ class Path:
     def __call__(self, s): #返回x与y的坐标轴
         s = float(s)
         completed_lap = 0
-        #print(s)
         while s >= 2*self.l1 + 2*self.r*math.pi + 2*self.l2:
             completed_lap += 1 # 完成了一圈
             s = s - (2*self.l1 + 2*self.r*math.pi + 2*self.l2)
@@ -297,7 +296,6 @@ y3c = np.array([c[1] for c in coord3c])
 
 # s,ey = coordinate_mapping(x2c,y2c,samples2c,[380,210])
 # time_end = time.time()
-# print(time_end - time_now)
 
 def plot_env():
     plt.plot(x, y, 'b',linewidth=0.8,zorder=1,color="black")
@@ -400,7 +398,6 @@ def coordinate_remapping(path_d,x_list,y_list,sample,x0_g_v):
     xy_stack = np.transpose(np.array([x_list,y_list])) - x0_g_v
     
     d = np.linalg.norm(xy_stack,ord=2, axis=1)
-    # print("d=",d)
     min_index = np.argmin(d)
 
     s_map = sample[min_index]

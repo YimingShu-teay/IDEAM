@@ -377,7 +377,6 @@ class LMPC:
         
         if C_label_additive == "constraint":
             prediction_ahead, prediction_rear, prediction_sf_ego, prediction_sl_target, second_paraml, third_paraml, surround_constraints = self.utils.get_all_constraint(C_label,path_now,path_d,ego_group,path_ego,x0,x0_g,target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_virtual)
-            # print("prediction_ahead=",prediction_ahead)
 
             if prediction_ahead is not None:
                 a0_l,b0_l,c0_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,0], (x0[3],x0[4]))
@@ -387,8 +386,6 @@ class LMPC:
                 psi_0_1_l = a1_l * x[3,1] + b1_l * x[4,1] + c1_l        
             
             if prediction_rear is not None:
-                print("prediction_rear[:,0]=",prediction_rear[:,0])
-                print("(x0[3],x0[4])=",(x0[3],x0[4]))
                 a0_f,b0_f,c0_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[:,0], (x0[3],x0[4]))
                 psi_0_0_f = a0_f * x0[3] + b0_f * x0[4] + c0_f # 0's time DHOCBF in this iteration
                 
@@ -397,8 +394,6 @@ class LMPC:
         
         elif C_label_additive == "Probe":
             prediction_ahead, prediction_sf_ego, second_paraml, third_paraml, surround_constraints = self.utils.get_all_constraint(C_label,path_now,path_d,ego_group,path_ego,x0,x0_g,target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_virtual)
-            print("surround_constraints=",surround_constraints)
-            # print("prediction_ahead=",prediction_ahead)
             if prediction_ahead is not None:
                 a0_l,b0_l,c0_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,0], (x0[3],x0[4]))
                 psi_0_0_l = a0_l * x0[3] + b0_l * x0[4] + c0_l # 0's time DHOCBF in this iteration
@@ -579,7 +574,6 @@ class LMPC:
                 
         elif path_now == 2:
             dL_min_surround = surround_constraints
-            print("dL_min_surround=",dL_min_surround)
             if dL_min_surround is not None:
                 cost += cvxpy.quad_form(slack_surroundl[:,self.T-1], self.Rssl)
                 constraints += [x[4,self.T] + slack_surroundl[0,self.T-1]<= dL_min_surround[self.T]]
@@ -704,7 +698,6 @@ class LMPC:
     def iMPC_solve_for_comparison(self, path_d,path_dindex, x0, x0_g, oa, od, GPR_vy, GPR_w, C_label,
                            last_X, path_now, ego_group, path_ego, target_group,vehicle_left,vehicle_centre,vehicle_right):
         
-        print("starts to solve here")
         x = cvxpy.Variable((self.NX, self.T + 1))
         u = cvxpy.Variable((self.NU, self.T))
         d = cvxpy.Variable((2, self.T))
@@ -722,7 +715,6 @@ class LMPC:
         
         ugv = Dynamic(**Params)
         
-        print("enter for")
         for t in range(self.T):
             cost += cvxpy.quad_form(u[:, t], self.R)
             cost += cvxpy.quad_form(d[:, t], self.P)
@@ -939,8 +931,6 @@ class LMPC:
                 psi_0_1_l = a1_l * x[3,1] + b1_l * x[4,1] + c1_l        
             
             if prediction_rear is not None:
-                print("prediction_rear[:,0]=",prediction_rear[:,0])
-                print("(x0[3],x0[4])=",(x0[3],x0[4]))
                 a0_f,b0_f,c0_f = tangent_to_ellipse(self.a_f*self.vehicle_length, self.b_f*self.vehicle_width, prediction_rear[:,0], (x0[3],x0[4]))
                 psi_0_0_f = a0_f * x0[3] + b0_f * x0[4] + c0_f # 0's time DHOCBF in this iteration
                 
@@ -949,8 +939,7 @@ class LMPC:
         
         elif C_label_additive == "Probe":
             prediction_ahead, prediction_sf_ego, second_paraml, third_paraml, surround_constraints = self.utils.get_all_constraint_for_noadapt(C_label,path_now,path_d,ego_group,path_ego,x0,x0_g,target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_virtual)
-            print("surround_constraints=",surround_constraints)
-            # print("prediction_ahead=",prediction_ahead)
+
             if prediction_ahead is not None:
                 a0_l,b0_l,c0_l = tangent_to_ellipse(self.a_l*self.vehicle_length, self.b_l*self.vehicle_width, prediction_ahead[:,0], (x0[3],x0[4]))
                 psi_0_0_l = a0_l * x0[3] + b0_l * x0[4] + c0_l # 0's time DHOCBF in this iteration
@@ -960,7 +949,6 @@ class LMPC:
                 
         elif C_label_additive == "No Probe":
             prediction_sl_ego, prediction_sf_ego, second_paraml, third_paraml, surround_constraints = self.utils.get_all_constraint_for_noadapt(C_label,path_now,path_d,ego_group,path_ego,x0,x0_g,target_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_virtual)
-            print("surround_constraints=",surround_constraints)
         xbar, dref, reference, k_profile = self.predict_motion(x0, x0_g, oa, od, self.dt, path_d, last_X)
         
         cost = 0.0
@@ -1005,7 +993,6 @@ class LMPC:
                         constraints += [x[4,t] <= 4.5]
                 
                 if C_label_additive == "constraint":
-                    print("constraint here")
                     if prediction_ahead is not None and t <=20:
                         cost += cvxpy.quad_form(([1,0]-w1[:,t]), self.Pw1)
                         cost += cvxpy.quad_form(slack_hocbf1[:,t], self.Rhocbf1)
@@ -1046,7 +1033,6 @@ class LMPC:
                         constraints += [Delta_h_t + self.gamma_r*ht_t + slack_cbf_tl[0,t]>= 0]
 
                 if C_label_additive == "Probe":
-                    print("probing here")
                     if prediction_ahead is not None and t <=20:
                         cost += cvxpy.quad_form(([1,0]-w1[:,t]), self.Pw1)
                         cost += cvxpy.quad_form(slack_hocbf1[:,t], self.Rhocbf1)
@@ -1065,7 +1051,6 @@ class LMPC:
                                         
             # longitudinal constraints in ego lane
             if C_label_additive == "No Probe":
-                print("keep here")
                 if prediction_sl_ego is not None:
                     cost += cvxpy.quad_form(slack_cbf[:, t], self.Rs)
                     ht = prediction_sl_ego[t]-x[3,t]-second_paraml[t]*x[0,t]-third_paraml[t]-self.vehicle_length
@@ -1134,7 +1119,6 @@ class LMPC:
                 
         elif path_now == 2:
             dL_min_surround = surround_constraints
-            print("dL_min_surround=",dL_min_surround)
             if dL_min_surround is not None:
                 cost += cvxpy.quad_form(slack_surroundl[:,self.T-1], self.Rssl)
                 constraints += [x[4,self.T] + slack_surroundl[0,self.T-1]<= dL_min_surround[self.T]]

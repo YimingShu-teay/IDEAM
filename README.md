@@ -16,13 +16,15 @@ If you feel interested, ▶️ [Click to watch the video](https://www.youtube.co
 conda create -n IDEAM python=3.7
 ```
 
-### Installation dependency
+### Install dependency
 
 The `requirements.txt` file should list all Python libraries and they will be installed using:
 
 ```bash
 pip install -r requirements.txt
 ```
+
+
 
 ## Usage
 
@@ -52,5 +54,11 @@ python emergency_test.py
 
 ## Citation
 
+If you find our code and paper can help, please cite our paper as:
+
 To be finished...
+
+## Acknowledgment
+
+IDEAM is greatly inspired by the following outstanding contributions to the open-source community: [iterative-MPC-DHOCBF](https://github.com/ShockLeo/Iterative-MPC-DHOCBF.git), [Safety-critical System](https://github.com/YimingShu-teay/Safety-critical-Decision-making-and-Control.git), [MPC-CBF](https://github.com/HybridRobotics/MPC-CBF.git)
 

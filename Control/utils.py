@@ -284,7 +284,6 @@ def drawObstacles(obs, path, vehicle_length, vehicle_width,x_range,y_range,a,b):
     y = obs[1][0]
     theta = obs[2][0]
 
-    #print(x, y, theta)
     t2 = plt.Polygon([[x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)],  [x + half_edge*np.sin(theta)+(1/2)*h*np.cos(theta), y- half_edge*np.cos(theta)+(1/2)*h*np.sin(theta)], [x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green',zorder=2)
     plt.gca().add_patch(t2)
     t2 = plt.Polygon([[x + half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y - half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)], [x+ (1/2)*h*np.cos(theta)- half_edge*np.sin(theta), y+(1/2)*h*np.sin(theta)+ half_edge*np.cos(theta)], [x - half_edge*np.sin(theta)-(1/2)*h*np.cos(theta), y+ half_edge*np.cos(theta)-(1/2)*h*np.sin(theta)]], color='green',zorder=2)
@@ -385,11 +384,9 @@ def metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,
         time_now = str(time.time()) + iter_num
     else:
         time_now = round_ + "_" + iter_num
-        print("time_now=",time_now)
     if comparison is not None:
         file = open("C:\\Users\\sym02\\Desktop\\Research\\Extension\\codes\\decision_change_rear\\"+ comparison + "\\file_save\\" + time_now, 'wb')
     else:
-        print("herea")
         file = open("C:\\Users\\sym02\\Desktop\\Research\\Extension\\codes\\decision_change_rear\\file_save\\" + time_now, 'wb')
     pickle.dump(metrics_dict, file)
     file.close()

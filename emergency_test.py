@@ -8,7 +8,6 @@ from Model.surrounding_params import *
 from Model.Surrounding_model import *
 from Model.surrounding_vehicles import *
 from Control.HOCBF import *
-from GPR.model_gp import *
 from DecisionMaking.decision_params import *
 from DecisionMaking.give_desired_path import *
 from DecisionMaking.util import *
@@ -80,8 +79,6 @@ util_params_ = util_params()
 utils = LeaderFollower_Uitl(**util_params_)
 mpc_controller.set_util(utils)
 
-GPR_vy = ModelGP(2)
-GPR_w = ModelGP(2)
 path_changed = 1
 
 ################## metrics record ##############
@@ -139,8 +136,6 @@ for i in range(N_t):
     # sheet.append(["Decision Making", decision_making_duration])
     # wb.save(decision_file)
 
-    
-    print("f_index desired_group=",desired_group["f_index"])
     path_d, path_dindex, C_label, sample,x_list,y_list,X0 = Decision_info(X0,X0_g,path_center,sample_center,x_center,y_center,boundary,desired_group,path_ego,path_now)
     C_label_additive = utils.inquire_C_state(C_label,desired_group)
     # last_desired_group = desired_group
@@ -161,13 +156,6 @@ for i in range(N_t):
 
     path_changed = path_dindex
         
-    # print("path_now=",path_now)
-    # print("C_label_additive=",C_label_additive)
-    # print("C_label=",C_label)
-    
-    # print("X0=",X0)
-    # print("oS=",oS)
-    # print("oey=",oey)
     ################ HOCBF projection plot ###########
     # s_sequence_l,ey_sequence_l,epsi_sequence_l = np.zeros(mpc_controller.T),np.zeros(mpc_controller.T),np.zeros(mpc_controller.T)
 
@@ -206,11 +194,9 @@ for i in range(N_t):
 
         
     if i == 400:
-        print("herea!!!!")
         path_m, x_m, y_m, samples_m = get_path_info(1)
         s_m,ey_m,epsi_m = find_frenet_coord(path_m, x_m, y_m, samples_m,X0_g)
         progress_40 = s_m 
-        print("nownownow")
         metrics_save(S_obs_record,initial_params,progress_20,progress_40,TTC_record,vel,vys,ys,acc,steer_record,lane_state_record,path_record,C_label_record,initial_vds,"400",round_="42_exp")
         # break
     
@@ -223,15 +209,8 @@ for i in range(N_t):
     # save_sovle_content(content_dir,content_to_save,i)
     
 
-    oa, od, ovx, ovy, owz, oS, oey, oepsi = mpc_controller.iterative_linear_mpc_control(X0, oa, od, dt, GPR_vy, GPR_w, C_label,  X0_g, path_d, last_X, path_now, ego_group, path_ego, desired_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_additive,C_label_virtual)
+    oa, od, ovx, ovy, owz, oS, oey, oepsi = mpc_controller.iterative_linear_mpc_control(X0, oa, od, dt, None, None, C_label,  X0_g, path_d, last_X, path_now, ego_group, path_ego, desired_group,vehicle_left,vehicle_centre,vehicle_right,path_dindex,C_label_additive,C_label_virtual)
 
-
-    # print("oS_jiechulaide=",oS) 
-    # print("oey_jiechulaide=",oey) 
-    # print("oepsi_jiechulaide=",oepsi)  
-    # print("oa_jiechulaide=",oa)
-    # print("od_jiechulaide=",od)
-    # # print("od_jiechulaide=",od)  
                                                           
     last_X = [ovx, ovy, owz, oS, oey, oepsi]
     
@@ -253,11 +232,7 @@ for i in range(N_t):
         X0_g_vis_list.append(X0_g_vis)
     
     X0_g_vis_list = np.array(X0_g_vis_list)
-    # print("X0_g_vis_list=",X0_g_vis_list)
-    # print("X0_g_vis_list[:,0]=",X0_g_vis_list[:,0].shape)
 
-    # TTC calc
-    # print(len(all_info))
     # index_info, _, _, proj_info, _, _, _, _, _ = all_info
     # index_lead = index_info[0]
     # proj_lead = proj_info[0]
@@ -338,10 +313,6 @@ for i in range(N_t):
     # pathRecord.append(path_now)
     
     # states_print(X0,X0_g,oa,od)
-    # print("a_lon=",a_lon_lat[0])
-    # print("a_lat=",a_lon_lat[1])
-    # print("ds=", ds)
-    
     if not os.path.exists(save_dir):
         os.mkdir(save_dir)
     plt.savefig(os.path.join(save_dir, "{}.png".format(i)),dpi=600)
@@ -352,5 +323,4 @@ for i in range(N_t):
 # animation_generation(dirpath+"\\figsave",time_now)   #可以生成video
 # Fig_delete(dirpath)
 # plot_error(t,ey,epsi,vx,vy,24)
-# print("X=",X)
-# print("Y=",Y)
+

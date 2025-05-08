@@ -51,26 +51,19 @@ class decision:
         visited_higher[start[0]] = max(visited_higher.get(start[0], 0), int(start[1]))
 
         if start == end:
-            print("path=",path)
             return [path]
 
         paths = []
      
         for node in graph[start]:
-            # print("start=",start)
-            # print("node=",node)
             if node[0] in visited_higher and int(node[1]) <= visited_higher[node[0]]:
                 continue             
             if node in excluded or not self.risk_assessment(group_dict, start, node, depth):
-                # print("excluded=",excluded)
-                # print("self.risk_assessment=",self.risk_assessment(group_dict, start, node, depth))
                 continue
 
             newpaths = self.find_all_paths(group_dict, graph, node, end, path, visited_higher.copy(), excluded, depth + 1)
             for newpath in newpaths:
-                print("newpath=",newpath)
                 paths.append(newpath)
-        print("paths=",paths)
         return paths
    
 
@@ -229,8 +222,7 @@ class decision:
                 group_list_rest.remove(key)
      
         while True:
-            long_term_result = self.long_term_efficiency(group_rest,group_list_rest)  # 计算长期效率结果
-            # print("最好的结果:long_term_result=",long_term_result)
+            long_term_result = self.long_term_efficiency(group_rest,group_list_rest) 
             
             # start_time = time.time()
             paths = self.find_all_paths(group_rest, graph_copy, start_group_str, long_term_result, excluded=exclusion_list)  # 尝试找到路径
