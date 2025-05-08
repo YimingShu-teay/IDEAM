@@ -6,7 +6,7 @@ This repository is the implementation of the TITS'25 paper:
 
 If you feel interested, ▶️ [Click to watch the video](https://www.youtube.com/watch?v=873BZoQSf-Q)
 
-<img src="assets\demo.gif" alt="demo" style="zoom:50%;" />
+<img src="assets/demo.gif" alt="demo" width="300" height="auto" />
 
 ## Installation
 
