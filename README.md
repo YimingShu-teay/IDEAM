@@ -6,6 +6,10 @@ This repository is the implementation of the TITS'25 paper:
 
 ▶️ [Click to watch the video](https://www.youtube.com/watch?v=873BZoQSf-Q)
 
+![1-_online-video-cutter.com_](pictures\1-_online-video-cutter.com_.gif)
+
+![output_video_jiansu-_online-video-cutter.com_](pictures\output_video_jiansu-_online-video-cutter.com_.gif)
+
 ## Installation
 
 ### Create conda env
