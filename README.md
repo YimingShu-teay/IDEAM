@@ -6,8 +6,6 @@ This repository is the implementation of the TITS'25 paper:
 
 ## Installation
 
----
-
 ### Create conda env
 
 ```shell
@@ -22,9 +20,7 @@ The `requirements.txt` file should list all Python libraries and they will be in
 pip install -r requirements.txt
 ```
 
-### Usage
-
----
+## Usage
 
 ### **One random scenario test** 
 
@@ -44,7 +40,5 @@ python multi_test.py
 python emergency_test.py
 ```
 
-### Citation
-
----
+## Citation
 
