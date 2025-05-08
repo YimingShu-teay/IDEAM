@@ -36,13 +36,14 @@ class LeaderFollower_Uitl:
     def get_onelane_lf(self,vehicle,xy_ego,forward_vector,path,x_list,y_list,sample,se):
         
         xy_left = vehicle[:,3:5]
-    
         
         projection_s = np.zeros(xy_left.shape[0])
         projection_ey = np.zeros(xy_left.shape[0])
         for i in range(xy_left.shape[0]):
             s_map,ey_map = self.coordinate_remapping(path,x_list,y_list,sample,xy_left[i])
-           
+            # print("!!!s_map=",s_map)
+            # print("!!!ey_map=",ey_map)
+            # print("!!x=",xy_left[i])
             projection_s[i] = s_map
             projection_ey[i] = ey_map
             
@@ -114,6 +115,9 @@ class LeaderFollower_Uitl:
 
         path, x_list, y_list, sample = get_path_info(path_now)
         se,ey_e = self.coordinate_remapping(path,x_list,y_list,sample,X0_g[0:2])
+        print("!!!!!!se=",se)
+        print("!!!!!path_now=",path_now)
+        
         theta = path.get_theta_r(se)
         forward_vector = [np.cos(theta),np.sin(theta)]
         xy_ego = [X0_g[0], X0_g[1]]
@@ -132,6 +136,7 @@ class LeaderFollower_Uitl:
         
         elif path_now == 2:
             lf_ego,proj_ego, proje_sey = self.get_egolane_lf(vehicle_right,se)
+            print("attention here!")
             lf_left, proj_left, projl_sey = self.get_onelane_lf(vehicle_centre,xy_ego,forward_vector,path,x_list,y_list,sample,se)
             lf_most_left, proj_most_left, projml_sey = self.get_onelane_lf(vehicle_left,xy_ego,forward_vector,path,x_list,y_list,sample,se)     
             return lf_ego, lf_left, lf_most_left,proj_ego, proj_left,proj_most_left, proje_sey, projl_sey, projml_sey
@@ -348,15 +353,22 @@ class LeaderFollower_Uitl:
         constraint_index:the list of index in a lane that coressponding 
         vehicles needed to be constrainted
         '''
+        print("direction_signal=",direction_signal)
         constraint_index = []
 
         for i in range(len(proj)):
             if (direction_signal == "constraint_right" and C_label == "L") or (direction_signal == "constraint_left" and C_label == "R") or (C_label_additive == "Probe"):
                 if proj[i] is not None:
+                    print("proj[i]=",proj[i])
+                    print("np.abs(proj[i])=",np.abs(proj[i]))
                     if np.abs(proj[i]) <= 2*self.l_diag:
                         constraint_index.append(lf[i])
             else:
                 if proj[i] is not None:
+                    print("enter here")
+                    print("lf[i]=",lf[i])
+                    print("target_df_index=",target_df_index)
+                    print("np.abs(proj[i])=",np.abs(proj[i]))
                     if np.abs(proj[i]) <= 2*self.l_diag and lf[i] != target_df_index:
                         constraint_index.append(lf[i])                
         return constraint_index
@@ -383,6 +395,9 @@ class LeaderFollower_Uitl:
             constraintL_index = self.get_index(proj_left,lf_left,target_df_index,C_label,direction_signal_L,C_label_additive)
             print("constraintR_index=",constraintR_index)
             print("constraintL_index=",constraintL_index)
+            print("proj_right=",proj_right)
+            print("C_label=",C_label)
+            print("C_label_additive=",C_label_additive)
             dL_min_T =  self.get_lateral_dmin(len(constraintL_index),constraintL_index,vehicle_left,direction_signal_L,C_label)
             dR_min_T =  self.get_lateral_dmin(len(constraintR_index),constraintR_index,vehicle_right,direction_signal_R,C_label)
             return dL_min_T, dR_min_T
@@ -408,7 +423,7 @@ class LeaderFollower_Uitl:
         return second_paraml, third_paraml
     
     def inquire_C_state(self,C_label, target_group):
-        # print("target_group's proj_f=",target_group)
+        # print("target_group=",target_group)
         if C_label != "K":
             projd_follower = target_group["proj_f"]
             follower_judge = self.target_f_judge(projd_follower)
@@ -431,7 +446,7 @@ class LeaderFollower_Uitl:
         x0_g_fe = [ego_group['xf'],ego_group['yf']]
         x0_g_lt = [target_group['xl'],target_group['yl']]
         x0_g_ft = [target_group['xf'],target_group['yf']]
-        
+        print("x0_g_le=",x0_g_le)
         #本车道前车
         if ego_group['sl'] is not None:
             prediction_sl_ego = ego_group['sl'][0:self.T+1]
@@ -457,6 +472,7 @@ class LeaderFollower_Uitl:
             prediction_vl_target = None
             
         target_df_index = target_group["f_index"]
+        # print("target_group=",target_group)
 
         surround_constraints = self.get_surrounding_constraints(all_info,path_now,vehicle_left,vehicle_centre,vehicle_right,target_df_index,C_label_virtual,C_label_additive)
         if C_label_additive == "No Probe":
@@ -466,14 +482,13 @@ class LeaderFollower_Uitl:
             if prediction_sl_ego is None:
                 return prediction_sl_ego, prediction_sf_ego[0,:], second_param_l, third_param_l, surround_constraints
             elif prediction_sl_ego is not None:
-                print("prediction_sl_ego=",type(prediction_sl_ego))
-                print("prediction_sf_ego=",type(prediction_sf_ego))
                 return prediction_sl_ego[0,:], prediction_sf_ego[0,:], second_param_l, third_param_l, surround_constraints
         
         elif C_label_additive == "Probe":#这个时候只有ahead的dhocbf
             second_param_tl, third_param_tl = self.get_longitudinal_constraints(ve,prediction_sl_target)
             prediction_ahead = self.get_remap_vehicles(x0_g_le,prediction_vl_ego,path_dindex,path_d)
-
+            if prediction_ahead is not None:
+                prediction_ahead[0,:] -= 1.75
             prediction_sf_ego = self.get_remap_vehicles(x0_g_fe,prediction_vf_ego,path_dindex,path_d)
             if prediction_sf_ego is None:
                 return prediction_ahead, prediction_sf_ego, second_param_tl, third_param_tl, surround_constraints
@@ -487,6 +502,12 @@ class LeaderFollower_Uitl:
             prediction_ahead = self.get_remap_vehicles(x0_g_le,prediction_vl_ego,path_dindex,path_d)
             prediction_sf_ego = self.get_remap_vehicles(x0_g_fe,prediction_vf_ego,path_dindex,path_d)
             prediction_sl_target = self.get_remap_vehicles(x0_g_lt,prediction_vl_target,path_dindex,path_d)
+            if prediction_ahead is not None:
+                prediction_ahead[0,:] -= 1.75
+                
+            if prediction_rear is not None:
+                prediction_rear[0,:] += 1.75
+
             if prediction_sl_target is None:
                 return prediction_ahead, prediction_rear, prediction_sf_ego[0,:], prediction_sl_target, second_param_tl, third_param_tl, surround_constraints
             else:
@@ -494,11 +515,18 @@ class LeaderFollower_Uitl:
     
     def coordinate_remapping(self,path_d,x_list,y_list,sample,x0_g_v):
         xy_stack = np.transpose(np.array([x_list,y_list])) - x0_g_v
+        # print("x0_g_v=",x0_g_v)
+        # print("xy_stack=",len(xy_stack))
+        # print("len(x)=",len(x_list))
+        # print("lrn(s)=",len(sample))
         d = np.linalg.norm(xy_stack,ord=2, axis=1)
         min_index = np.argmin(d)
+        # print("nearest_X=",x_list[min_index])
+        # print("nearest_Y=",y_list[min_index])
         s_map = sample[min_index]
         ey_map = d[min_index]
-        
+        # print("ssssssmap=",s_map)
+        # print("eeeeeeeey_map=",ey_map)
         theta_r = path_d.get_theta_r(s_map)
         sign = (x0_g_v[1]-y_list[min_index])*np.cos(theta_r) - (x0_g_v[0]-x_list[min_index])*np.sin(theta_r)
         if sign > 0:
@@ -596,13 +624,14 @@ class LeaderFollower_Uitl:
         second_param_l, third_param_l = self.get_longitudinal_constraints(ve,prediction_vl_ego)
         prediction_sl_ego = self.get_remap_vehicles(x0_g_le,prediction_vl_ego,path_dindex,path_d)
         prediction_sf_ego = self.get_remap_vehicles(x0_g_fe,prediction_vf_ego,path_dindex,path_d)
-        if prediction_sl_ego is None:
+        if prediction_sl_ego is None and prediction_sf_ego is not None:
             return prediction_sl_ego, prediction_sf_ego[0,:], second_param_l, third_param_l, surround_constraints
-        elif prediction_sl_ego is not None:
+        elif prediction_sl_ego is not None and prediction_sf_ego is None:
+            return prediction_sl_ego[0,:], prediction_sf_ego, second_param_l, third_param_l, surround_constraints
+        elif prediction_sl_ego is not None and prediction_sf_ego is not None:
             return prediction_sl_ego[0,:], prediction_sf_ego[0,:], second_param_l, third_param_l, surround_constraints
-        
-        
-        
+        elif prediction_sl_ego is None and prediction_sf_ego is None:
+            return prediction_sl_ego, prediction_sf_ego, second_param_l, third_param_l, surround_constraints        
         
     def inquire_C_state_for_noadapt(self,C_label, target_group):
         # print("target_group's proj_f=",target_group)
@@ -629,6 +658,7 @@ class LeaderFollower_Uitl:
         x0_g_lt = [target_group['xl'],target_group['yl']]
         x0_g_ft = [target_group['xf'],target_group['yf']]
         
+        print("x0_g_le=",x0_g_le)
         #本车道前车
         if ego_group['sl'] is not None:
             prediction_sl_ego = ego_group['sl'][0:self.T+1]
@@ -672,6 +702,8 @@ class LeaderFollower_Uitl:
             prediction_ahead = self.get_remap_vehicles(x0_g_le,prediction_vl_ego,path_dindex,path_d)
 
             prediction_sf_ego = self.get_remap_vehicles(x0_g_fe,prediction_vf_ego,path_dindex,path_d)
+            if prediction_ahead is not None:
+                prediction_ahead[0,:] -= 1.75            
             if prediction_sf_ego is None:
                 return prediction_ahead, prediction_sf_ego, second_param_tl, third_param_tl, surround_constraints
             else:
@@ -684,6 +716,11 @@ class LeaderFollower_Uitl:
             prediction_ahead = self.get_remap_vehicles(x0_g_le,prediction_vl_ego,path_dindex,path_d)
             prediction_sf_ego = self.get_remap_vehicles(x0_g_fe,prediction_vf_ego,path_dindex,path_d)
             prediction_sl_target = self.get_remap_vehicles(x0_g_lt,prediction_vl_target,path_dindex,path_d)
+            if prediction_ahead is not None:
+                prediction_ahead[0,:] -= 1.75
+                
+            if prediction_rear is not None:
+                prediction_rear[0,:] += 1.75            
             if prediction_sl_target is None:
                 return prediction_ahead, prediction_rear, prediction_sf_ego[0,:], prediction_sl_target, second_param_tl, third_param_tl, surround_constraints
             else:

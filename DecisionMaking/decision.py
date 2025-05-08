@@ -1,5 +1,7 @@
 import numpy as np
 import copy
+import time
+import openpyxl
 
 class decision:
     def __init__(self,l_diag,l,T_risk,epsilon,k,rho,a_max_acc_lon,a_max_brake_lon,a_min_brake_lon,threshold,d0,Td):
@@ -49,6 +51,7 @@ class decision:
         visited_higher[start[0]] = max(visited_higher.get(start[0], 0), int(start[1]))
 
         if start == end:
+            print("path=",path)
             return [path]
 
         paths = []
@@ -65,8 +68,9 @@ class decision:
 
             newpaths = self.find_all_paths(group_dict, graph, node, end, path, visited_higher.copy(), excluded, depth + 1)
             for newpath in newpaths:
+                print("newpath=",newpath)
                 paths.append(newpath)
-
+        print("paths=",paths)
         return paths
    
 
@@ -211,11 +215,11 @@ class decision:
         return short_term_group[first_largest_index]['name']
         
     def decision_making(self,group_dict,start_group_str):
+        start_time = time.time()
         exclusion_list = self.gap_mag_judge(group_dict,start_group_str)
         group_rest = copy.deepcopy(group_dict)
         graph_copy = copy.deepcopy(self.graph)
         group_list_rest = copy.deepcopy(self.group_list)
-        
  
         
         for key in self.group_list:
@@ -227,9 +231,29 @@ class decision:
         while True:
             long_term_result = self.long_term_efficiency(group_rest,group_list_rest)  # 计算长期效率结果
             # print("最好的结果:long_term_result=",long_term_result)
+            
+            # start_time = time.time()
             paths = self.find_all_paths(group_rest, graph_copy, start_group_str, long_term_result, excluded=exclusion_list)  # 尝试找到路径
+            # end_time = time.time()
+            # DFS_duration = end_time - start_time
+
+            # DFS_file = "dfs_times.xlsx"
+            # # 记录 decision making 时间到 Excel 文件
+            # wb = openpyxl.load_workbook(DFS_file)
+            # sheet = wb["DFS Times"]
+            # sheet.append(["DFS Making", DFS_duration])
+            # wb.save(DFS_file)
             
             if long_term_result == start_group_str:
+                end_time = time.time()
+                decision_making_duration = end_time - start_time
+
+                decision_file = "decision_times.xlsx"
+                # 记录 decision making 时间到 Excel 文件
+                wb = openpyxl.load_workbook(decision_file)
+                sheet = wb["Decision Times"]
+                sheet.append(["Decision Making", decision_making_duration])
+                wb.save(decision_file)
                 return group_dict[start_group_str]
             
             if paths != []:  
@@ -245,11 +269,22 @@ class decision:
                     short_term_result = self.short_term_efficiency(group_rest,shortest_paths,group_list_rest)
                     
                     desired_group = group_dict[short_term_result]
+                    
+                end_time = time.time()
+                decision_making_duration = end_time - start_time
+
+                decision_file = "decision_times.xlsx"
+                # 记录 decision making 时间到 Excel 文件
+                wb = openpyxl.load_workbook(decision_file)
+                sheet = wb["Decision Times"]
+                sheet.append(["Decision Making", decision_making_duration])
+                wb.save(decision_file)
                 return desired_group
 
             else:
                 del group_rest[long_term_result]
                 graph_copy = self.remove_node_and_links(graph_copy,long_term_result)
                 group_list_rest.remove(long_term_result)
-
+            
+        
     

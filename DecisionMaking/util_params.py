@@ -8,7 +8,7 @@ def util_params():
     vehicle_length = 3.5
     l = vehicle_length
     l_diag = math.sqrt(l**2 + vehicle_width**2)
-    mu = 2.2
+    mu = 2.1
     T = 70
     dt = 0.1
     lane_width = 3.5
