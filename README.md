@@ -52,7 +52,7 @@ python emergency_test.py
 
 【2】When recording the time consumption, you need to separately track the statistics for C-DFS and LSGM in the same scene, as LSGM includes C-DFS, using `openpyxl.load_workbook` within the LSGM will result in incorrect duration statistics. Alternatively, you can use a different statistical method.
 
-【3】If you want to generate a video, make sure to save each frame as an image during the testing process.
+【3】Here are some ppts and books in `records`,  check them if you find them useful.
 
 ## Citation
 
