@@ -1,5 +1,3 @@
-# IDEAM
-
 This repository is the implementation of the TITS'25 paper:
 
 **Agile Decision-Making and Safety-Critical Motion Planning for Emergency Autonomous Vehicles**
