@@ -46,7 +46,7 @@ python multi_test.py
 python emergency_test.py
 ```
 
-### Notes
+### Notes:
 
 【1】You can use the 200 pre-randomly generated configuration files in `file_save` for testing, or alternatively, randomly generate new scenarios for testing.
 
