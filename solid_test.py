@@ -96,6 +96,9 @@ path_record = []
 lane_state_record = []
 C_label_record = []
 
+# decision_file = "decision_times.xlsx"
+# # 记录 decision making 时间到 Excel 文件
+# wb = openpyxl.load_workbook(decision_file)
 last_desired_group = None
 for i in range(N_t):
     bar.next()
@@ -127,9 +130,6 @@ for i in range(N_t):
     end_time = time.time()
     decision_making_duration = end_time - start_time
 
-    # decision_file = "decision_times.xlsx"
-    # # 记录 decision making 时间到 Excel 文件
-    # wb = openpyxl.load_workbook(decision_file)
     # sheet = wb["Decision Times"]
     # sheet.append(["Decision Making", decision_making_duration])
     # wb.save(decision_file)

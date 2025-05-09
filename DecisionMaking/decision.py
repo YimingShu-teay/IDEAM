@@ -2,7 +2,9 @@ import numpy as np
 import copy
 import time
 import openpyxl
-
+# DFS_file = "dfs_times.xlsx"
+# # 记录 decision making 时间到 Excel 文件
+# wb_DFS = openpyxl.load_workbook(DFS_file)
 class decision:
     def __init__(self,l_diag,l,T_risk,epsilon,k,rho,a_max_acc_lon,a_max_brake_lon,a_min_brake_lon,threshold,d0,Td):
         self.graph = {
@@ -30,11 +32,9 @@ class decision:
         self.Td = Td
     
     def remove_node_and_links(self, graph,node_to_remove):
-        # 如果节点在图中，先移除这个节点
         if node_to_remove in graph:
             del graph[node_to_remove]
 
-        # 遍历图中的所有节点，移除指向被删除节点的链接
         for node, edges in graph.items():
             if node_to_remove in edges:
                 graph[node].remove(node_to_remove)
@@ -68,9 +68,6 @@ class decision:
    
 
     def risk_assessment(self, group_dict, start, node, depth):
-        # final_risk_judge： ture通过，false没通过
-        # l：leader; f：follower; e:ego_gap; t: target_gap
-        #要输出的是一个ture或者false
         start_group = group_dict[start]
         target_group = group_dict[node]
         
@@ -114,7 +111,6 @@ class decision:
             return final_risk_judge
         
     def gap_mag_judge(self,group_dict,start_group_str):
-        #要输出的是gap列表
         exclusion_list = []
         for key, value in group_dict.items():
             final_mag_judge = self.gap_magnitude(value)
@@ -208,7 +204,7 @@ class decision:
         return short_term_group[first_largest_index]['name']
         
     def decision_making(self,group_dict,start_group_str):
-        start_time = time.time()
+        # start_time = time.time()
         exclusion_list = self.gap_mag_judge(group_dict,start_group_str)
         group_rest = copy.deepcopy(group_dict)
         graph_copy = copy.deepcopy(self.graph)
@@ -222,30 +218,26 @@ class decision:
                 group_list_rest.remove(key)
      
         while True:
-            long_term_result = self.long_term_efficiency(group_rest,group_list_rest) 
+            long_term_result = self.long_term_efficiency(group_rest,group_list_rest)  # 计算长期效率结果
+            # print("最好的结果:long_term_result=",long_term_result)
             
             # start_time = time.time()
             paths = self.find_all_paths(group_rest, graph_copy, start_group_str, long_term_result, excluded=exclusion_list)  # 尝试找到路径
             # end_time = time.time()
             # DFS_duration = end_time - start_time
-
-            # DFS_file = "dfs_times.xlsx"
-            # # 记录 decision making 时间到 Excel 文件
-            # wb = openpyxl.load_workbook(DFS_file)
-            # sheet = wb["DFS Times"]
-            # sheet.append(["DFS Making", DFS_duration])
-            # wb.save(DFS_file)
-            
+            # sheet_DFS = wb_DFS["DFS Times"]
+            # sheet_DFS.append(["DFS Making", DFS_duration])
+            # wb_DFS.save(DFS_file)
             if long_term_result == start_group_str:
-                end_time = time.time()
-                decision_making_duration = end_time - start_time
+                # end_time = time.time()
+                # decision_making_duration = end_time - start_time
 
-                decision_file = "decision_times.xlsx"
-                # 记录 decision making 时间到 Excel 文件
-                wb = openpyxl.load_workbook(decision_file)
-                sheet = wb["Decision Times"]
-                sheet.append(["Decision Making", decision_making_duration])
-                wb.save(decision_file)
+                # decision_file = "decision_times.xlsx"
+                # # 记录 decision making 时间到 Excel 文件
+                # wb = openpyxl.load_workbook(decision_file)
+                # sheet = wb["Decision Times"]
+                # sheet.append(["Decision Making", decision_making_duration])
+                # wb.save(decision_file)
                 return group_dict[start_group_str]
             
             if paths != []:  
@@ -262,15 +254,15 @@ class decision:
                     
                     desired_group = group_dict[short_term_result]
                     
-                end_time = time.time()
-                decision_making_duration = end_time - start_time
+                # end_time = time.time()
+                # decision_making_duration = end_time - start_time
 
-                decision_file = "decision_times.xlsx"
-                # 记录 decision making 时间到 Excel 文件
-                wb = openpyxl.load_workbook(decision_file)
-                sheet = wb["Decision Times"]
-                sheet.append(["Decision Making", decision_making_duration])
-                wb.save(decision_file)
+                # decision_file = "decision_times.xlsx"
+                # # 记录 decision making 时间到 Excel 文件
+                # wb = openpyxl.load_workbook(decision_file)
+                # sheet = wb["Decision Times"]
+                # sheet.append(["Decision Making", decision_making_duration])
+                # wb.save(decision_file)
                 return desired_group
 
             else:

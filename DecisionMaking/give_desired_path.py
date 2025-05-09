@@ -72,6 +72,8 @@ def repropagate(path_d,sample,x_list,y_list,x0_g,x0):
     return x_next
 
 def fetch_path_info(name,path_now):
+    print("name=",name)
+    print("path_now=",path_now)
     if (name == "L" and path_now == 1) or (name == "C" and path_now == 0):
         return path1, x1, y1, samples1,
     elif(name == "R" and path_now == 1) or (name == "C" and path_now == 2):
@@ -91,6 +93,7 @@ def post_desired_group(last_desired_group,desired_group,x0_g,path_now):
                 d = np.linalg.norm(diff,ord=2, axis=1)
                 min_index = np.argmin(d)
                 min_d = d[min_index]
+                print("min_d=",min_d)
                 if min_d <= 0.2:
                     desired_group_final = last_desired_group
                 else:
@@ -112,6 +115,8 @@ def post_process(x0,desired_group):
     else:
         target_ahead = 10000
     ego_s = x0[3]
+    print("target_ahead=",target_ahead)
+    print("ego_s=",ego_s)
     dis = abs(target_ahead - ego_s)
     is_short = False
     if dis <= 7.5:
@@ -120,18 +125,27 @@ def post_process(x0,desired_group):
 
 
 def Decision_info(x0,x0_g,path_center_list,sample_center,x_center,y_center,bound,desired_group,path_now,path_nowindex):
+    #m貌似是这个地方的问题
+    # print("desired_group=",desired_group)
+    # if last_desired_group is not None:
+    #     desired_group = post_desired_group(last_desired_group,desired_group,x0_g,path_nowindex)    
+    # print("desired_group=",desired_group)
     path_d = give_desired_path(desired_group,path_now)
     path_dindex = np.where(path_center_list==path_d)[0][0]
     sample,x_list,y_list = sample_center[path_dindex],x_center[path_dindex],y_center[path_dindex]
     sample_post,x_list_post,y_list_post = sample_center[path_nowindex],x_center[path_nowindex],y_center[path_nowindex]
     x0_post = repropagate(path_now,sample_post,x_list_post,y_list_post,x0_g,x0)
     is_short = post_process(x0_post,desired_group)
+    print("path_dindex=",path_dindex)
+    print("is_short=",is_short)
     if path_now != path_d and not is_short:
         if path_dindex > path_nowindex:
             C_label = "R"
         else:
             C_label = "L"
         x0_update = repropagate(path_d,sample,x_list,y_list,x0_g,x0)
+        print("path_d=",path_d)
+        print("path_dindex=",path_dindex)
         return path_d, path_dindex,C_label, sample,x_list,y_list,x0_update
     
     else:
