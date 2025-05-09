@@ -50,7 +50,7 @@ def projection_on_ellipse(a, b, center, external_point):
         x, y, lam = p
         eq1 = 2*(x - x1) + 2*lam * (x - h)/a**2
         eq2 = 2*(y - y1) + 2*lam * (y - k)/b**2
-        eq3 = eq3 = (x - h)**2/a**2 + (y - k)**2/b**2 - 1
+        eq3 = (x - h)**2/a**2 + (y - k)**2/b**2 - 1
         return [eq1, eq2, eq3]
     
     # Finding a better initial guess
