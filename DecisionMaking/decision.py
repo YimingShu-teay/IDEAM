@@ -156,21 +156,11 @@ class decision:
             
         index = np.argmax(np.array(long_term_s))
         long_term_result = group_list[index]
-    # # 检查对应的 '2' 结尾的条目是否存在
-    #     if long_term_result.endswith('1'):
-    #         potential_result_2 = long_term_result[:-1] + '2'
-    #         if potential_result_2 not in group_rest.keys():
-    #             # 如果没有 '2' 结尾的条目，保持原有 '1' 结尾的结果
-    #             return long_term_result
-    #         else:
-    #             # 如果存在 '2' 结尾的条目，则更新结果
-    #             long_term_result = potential_result_2
         
         return long_term_result
     
     def short_term_efficiency(self, group_dict, shortest_paths, group_list):
 
-        # 定义函数计算给定sl index时的最大值组名
         def compute_for_sl_index(sl_index):
             short_term_s = []
             short_term_group = []
@@ -180,7 +170,7 @@ class decision:
                 if group['sl'] is not None and len(group['sl']) > sl_index:
                     s_last_short = group['sl'][sl_index]
                 else:
-                    s_last_short = 10000  # 用于处理没有足够数据的情况
+                    s_last_short = 10000  
                 short_term_s.append(s_last_short)
                 short_term_group.append(group)
 
@@ -190,21 +180,17 @@ class decision:
             
             return first_largest_index, second_largest_index, short_term_s, short_term_group
 
-        # 按照不同的sl指数依次计算和比较
         for sl_index in [20, 30, 40, 50, 60]:
             first_largest_index, second_largest_index, short_term_s, short_term_group = compute_for_sl_index(sl_index)
             
             if len(short_term_s) > 1 and short_term_s[first_largest_index] - short_term_s[second_largest_index] < self.threshold:
-                continue  # 如果差值小于阈值，则继续检查下一个sl指数
+                continue  
             else:
-                # 找到满足条件的结果或在最后一个sl指数仍未满足条件时返回结果
                 return short_term_group[first_largest_index]['name']
-  
-        # 如果所有检查都不满足，返回最终计算的最大值
+
         return short_term_group[first_largest_index]['name']
         
     def decision_making(self,group_dict,start_group_str):
-        # start_time = time.time()
         exclusion_list = self.gap_mag_judge(group_dict,start_group_str)
         group_rest = copy.deepcopy(group_dict)
         graph_copy = copy.deepcopy(self.graph)
@@ -219,7 +205,6 @@ class decision:
      
         while True:
             long_term_result = self.long_term_efficiency(group_rest,group_list_rest)  # 计算长期效率结果
-            # print("最好的结果:long_term_result=",long_term_result)
             
             # start_time = time.time()
             paths = self.find_all_paths(group_rest, graph_copy, start_group_str, long_term_result, excluded=exclusion_list)  # 尝试找到路径
@@ -229,15 +214,6 @@ class decision:
             # sheet_DFS.append(["DFS Making", DFS_duration])
             # wb_DFS.save(DFS_file)
             if long_term_result == start_group_str:
-                # end_time = time.time()
-                # decision_making_duration = end_time - start_time
-
-                # decision_file = "decision_times.xlsx"
-                # # 记录 decision making 时间到 Excel 文件
-                # wb = openpyxl.load_workbook(decision_file)
-                # sheet = wb["Decision Times"]
-                # sheet.append(["Decision Making", decision_making_duration])
-                # wb.save(decision_file)
                 return group_dict[start_group_str]
             
             if paths != []:  
@@ -254,15 +230,6 @@ class decision:
                     
                     desired_group = group_dict[short_term_result]
                     
-                # end_time = time.time()
-                # decision_making_duration = end_time - start_time
-
-                # decision_file = "decision_times.xlsx"
-                # # 记录 decision making 时间到 Excel 文件
-                # wb = openpyxl.load_workbook(decision_file)
-                # sheet = wb["Decision Times"]
-                # sheet.append(["Decision Making", decision_making_duration])
-                # wb.save(decision_file)
                 return desired_group
 
             else:
