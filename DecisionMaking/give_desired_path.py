@@ -136,16 +136,12 @@ def Decision_info(x0,x0_g,path_center_list,sample_center,x_center,y_center,bound
     sample_post,x_list_post,y_list_post = sample_center[path_nowindex],x_center[path_nowindex],y_center[path_nowindex]
     x0_post = repropagate(path_now,sample_post,x_list_post,y_list_post,x0_g,x0)
     is_short = post_process(x0_post,desired_group)
-    print("path_dindex=",path_dindex)
-    print("is_short=",is_short)
     if path_now != path_d and not is_short:
         if path_dindex > path_nowindex:
             C_label = "R"
         else:
             C_label = "L"
         x0_update = repropagate(path_d,sample,x_list,y_list,x0_g,x0)
-        print("path_d=",path_d)
-        print("path_dindex=",path_dindex)
         return path_d, path_dindex,C_label, sample,x_list,y_list,x0_update
     
     else:

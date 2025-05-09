@@ -8,12 +8,11 @@ def find_nearest_intersection(a, b, center, external_point):
     h, k = center
     x1, y1 = external_point
 
-    # 计算斜率
-    if x1 - h == 0:  # 避免除以零，这时直线是竖直的
+    if x1 - h == 0:  
         nearest_x = x1
-        if y1 > k:  # 外部点在椭圆的上方
+        if y1 > k:  
             nearest_y = k + b
-        else:  # 外部点在椭圆的下方
+        else:  
             nearest_y = k - b
         return nearest_x, nearest_y
 
@@ -35,7 +34,6 @@ def find_nearest_intersection(a, b, center, external_point):
     y_sol1 = m*x_sol1 + c
     y_sol2 = m*x_sol2 + c
 
-    # 判断哪一个解更近
     d1 = (x1 - x_sol1)**2 + (y1 - y_sol1)**2
     d2 = (x1 - x_sol2)**2 + (y1 - y_sol2)**2
     if d1 < d2:
@@ -43,7 +41,6 @@ def find_nearest_intersection(a, b, center, external_point):
     else:
         return x_sol2, y_sol2
 
-#得到投影点
 def projection_on_ellipse(a, b, center, external_point):
 
     h, k = center
@@ -63,7 +60,6 @@ def projection_on_ellipse(a, b, center, external_point):
     
     return x, y
 
-#得到经过椭圆上交点的椭圆切线
 def tangent_to_ellipse(a, b, center, external_point):
     point_on_ellipse = projection_on_ellipse(a, b, center, external_point)
     h, k = center
@@ -77,57 +73,45 @@ def tangent_to_ellipse(a, b, center, external_point):
 
 
 def plot_ellipse_and_external_point(center, a, b, external_point, projection_point):
-    # 解构椭圆中心和外部点的坐标
     h, k = center
     x1, y1 = external_point
     x2, y2 = projection_point
 
-    # 生成椭圆上的点
     theta = np.linspace(0, 2 * np.pi, 1000)
     x = h + a * np.cos(theta)
     y = k + b * np.sin(theta)
 
-    # 绘制椭圆
     plt.plot(x, y, label='Ellipse', color='blue')
 
-    # 绘制外部点
     plt.scatter(x1, y1, color='green', label='External Point')
     
     plt.scatter(x2, y2, color='red', label='Projection Point')
     
-    # 设置图例
     plt.legend()
 
-    # 显示图像
-    plt.axis('equal')  # 设置等比例坐标轴，这样椭圆不会被压缩或拉伸
+    plt.axis('equal')  
     plt.grid(True)
     plt.show()
     
     
 def plot_ellipse_and_tangent(a, b, center, external_point):
-    # 获取在椭圆上的投影点
     x_proj, y_proj = projection_on_ellipse(a, b, center, external_point)
 
-    # 获取经过该点的椭圆的切线的系数
     coeff_a, coeff_b, coeff_c = tangent_to_ellipse(a, b, center, (x_proj, y_proj))
 
     # 计算切线方程 y = (-coeff_a * x - coeff_c) / coeff_b
     x_vals = np.linspace(center[0] - a - 1, center[0] + a + 1, 400)
     y_vals = (-coeff_a * x_vals - coeff_c) / coeff_b
 
-    # 绘制椭圆
     theta = np.linspace(0, 2 * np.pi, 1000)
     x = center[0] + a * np.cos(theta)
     y = center[1] + b * np.sin(theta)
     plt.plot(x, y, label='Ellipse', color='blue')
 
-    # 绘制切线
     plt.plot(x_vals, y_vals, label='Tangent', color='red')
 
-    # 绘制外部点
     plt.plot(external_point[0], external_point[1], 'go', label='External Point')
 
-    # 绘制椭圆上的投影点
     plt.plot(x_proj, y_proj, 'ro', label='Projection Point')
 
 

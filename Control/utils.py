@@ -71,19 +71,14 @@ def plot_car(x, y, yaw_rad, length=5.0, width=2.0, color='blue', border_width=4,
 
 car_image = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\black&white.png")
 def plot_car(x, y, yaw_rad, length=5.0, width=2.0):
-    # 将偏航角从弧度转换为度数
     yaw_deg = np.rad2deg(yaw_rad)
-    # 旋转图片
     rotated_image = rotate(car_image, angle=yaw_deg, reshape=True)
 
-    # 调整缩放以匹配目标长宽比
     zoom_x = 0.4
     zoom_y = 0.28
 
-    # 使用OffsetImage和extent进行缩放
     imagebox = offsetbox.OffsetImage(rotated_image, zoom=min(zoom_x, zoom_y))
     
-    # 添加图片到图表中
     ab = offsetbox.AnnotationBbox(imagebox, (x, y), frameon=False)
     plt.gca().add_artist(ab)
     
@@ -91,7 +86,6 @@ car_image_surround_1 = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\co
 car_image_surround_2 = plt.imread(r"C:\Users\sym02\Desktop\Research\Extension\codes\decision_change_rear\carfigs\red.png")
 # car_image_surround = random.choice([car_image_surround_1, car_image_surround_2])
 def plot_car_surround(x, y, yaw_rad, i,lane):
-    # 根据 i 的奇偶性选择图片
     if lane=="left" or lane=="right":
         if i % 2 == 1:
             car_image_surround = car_image_surround_1
@@ -103,21 +97,15 @@ def plot_car_surround(x, y, yaw_rad, i,lane):
         else:
             car_image_surround = car_image_surround_1  
     
-
-    # 将偏航角从弧度转换为度数
     yaw_deg = np.rad2deg(yaw_rad)
     
-    # 旋转图片
     rotated_image = rotate(car_image_surround, angle=yaw_deg, reshape=True)
 
-    # 调整缩放以匹配目标长宽比
     zoom_x = 0.4
     zoom_y = 0.28
 
-    # 使用OffsetImage和extent进行缩放
     imagebox = offsetbox.OffsetImage(rotated_image, zoom=min(zoom_x, zoom_y))
     
-    # 添加图片到图表中
     ab = offsetbox.AnnotationBbox(imagebox, (x, y), frameon=False)
     plt.gca().add_artist(ab)
 
@@ -155,19 +143,13 @@ def animation_generation(addr,now_time):
 
 def animation_generation2(addr, now_time):
     pic_num = png_count(addr)
-    # 指定 GIF 文件的保存路径
     gif_path = f"{addr}\\{now_time}.gif"
-    # 创建一个 GIF 写入器，注意设置适当的 duration（单位应该是秒）
-    with imageio.get_writer(gif_path, mode='I', duration=0.2) as writer:  # 注意：duration 参数单位是秒，设置为 0.2 秒
+    with imageio.get_writer(gif_path, mode='I', duration=0.2) as writer:
         for i in range(pic_num):
-            # 读取每个 PNG 文件
             image_path = f"{addr}\\{i}.png"
             with Image.open(image_path) as img:
-                # 将图像转换为 'P' 模式，使用自适应调色板
                 img_converted = img.convert('P', palette=Image.ADAPTIVE, colors=256)
-                # 保存转换后的图像到临时内存
                 img_converted.save(image_path, format='PNG')
-                # 重新加载优化后的图像并添加到 GIF
                 writer.append_data(imageio.imread(image_path))
 
 def Fig_delete(addr):
@@ -231,7 +213,7 @@ def get_future_trajectory(oS,oey,path_d,T):
         
     return x_g, y_g, yaw_g
 
-#来自AMR_MPC-CBF
+
 def transformProj2Orig(s, l, theta_tilde, path):
     '''
     输入：
