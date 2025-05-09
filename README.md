@@ -1,4 +1,4 @@
-### Brief Introduction
+# IDEAM
 
 This repository is the implementation of the TITS'25 paper:
 
