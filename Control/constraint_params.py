@@ -51,7 +51,7 @@ def constraint_params():
           np.diag([3.5,40.0,40.0,0.0,100.0,240.0])*0.1]
     Qt = np.diag([0.0,600.0])*0.1
     P = np.diag([5.0,0.0])*0.1
-    Pw1 = np.diag([5.0,0.0])*0.1 #这里修一个mpc重解，还有一个决策问题需要修复
+    Pw1 = np.diag([5.0,0.0])*0.1 
     Pw2 = np.diag([5.0,0.0])*0.1
     Pw3 = np.diag([10,0.0])*0.1
     Pw4 = np.diag([10,0.0])*0.1
@@ -78,7 +78,7 @@ def constraint_params():
     a_l = 1.5
     b_l = 2.2
     a_f = 1.5
-    b_f = 2.3 #这里的参数需要改可变，还要de一下hocbf里的delta的bug
+    b_f = 2.3 
     dt = 0.1
     
     params = {

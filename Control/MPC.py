@@ -8,7 +8,8 @@ from Control.utils import *
 from Model.Dynamical_model import *
 from Model.params import params
 from Control.HOCBF import *
-
+# ecos_time = prob.solver_stats.solve_time  # 求解时间（单位：秒）
+# wb = openpyxl.load_workbook("solver_times.xlsx")
 class LMPC:
     def __init__(self,NX,NU,T,TARGET_SPEED,MAX_ACCEL,MIN_ACCEL,
                  MAX_SPEED,MIN_SPEED,MAX_STEER,MIN_STEER,MAX_DACCEL,
@@ -626,9 +627,6 @@ class LMPC:
             oa = get_nparray_from_matrix(u.value[0, :])
             odelta = get_nparray_from_matrix(u.value[1, :])
             
-            # ecos_time = prob.solver_stats.solve_time  # 求解时间（单位：秒）
-            # print(f"ECOS solver time: {ecos_time:.6f} seconds")
-            # wb = openpyxl.load_workbook("solver_times.xlsx")
             # sheet = wb["Solver Times"]
 
             # # 将新的求解时间追加到工作表
