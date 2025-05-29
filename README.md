@@ -13,7 +13,7 @@ If you feel interested, ▶️ [Click to watch the video](https://www.youtube.co
 ### Create conda env
 
 ```shell
-conda create -n IDEAM python==3.7
+conda create -n IDEAM python=3.7
 ```
 
 ### Install dependency
