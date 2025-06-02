@@ -58,7 +58,17 @@ python emergency_test.py
 
 If you find our code and paper can help, please cite our paper as:
 
-To be finished...
+```
+@article{shu2025agile,
+  title={Agile Decision-Making and Safety-Critical Motion Planning for Emergency Autonomous Vehicles},
+  author={Shu, Yiming and Zhou, Jingyuan and Zhang, Fu},
+  journal={IEEE Transactions on Intelligent Transportation Systems},
+  year={2025},
+  publisher={IEEE}
+}
+```
+
+
 
 ## Acknowledgment
 
